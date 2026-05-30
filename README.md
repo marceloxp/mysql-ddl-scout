@@ -54,23 +54,21 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 
 ### 2. Inspect Column Metadata (`--fields_info`)
 
-Extracts attributes for specified columns of a single table. Format: `table_name:column1,column2,column3`.
+Extracts attributes for specified columns of a single table. Format: `table_name:column1,column2,column3`. Results follow the requested field order. Unknown fields are included as `{"field":"...","exists":false}` and the command exits with code `1`.
 
 ENUM and SET columns include a `values` array. DECIMAL columns use `precision` and `scale`. Function defaults (e.g. `CURRENT_TIMESTAMP`) are returned as strings.
 
 ```bash
-mysql-ddl-scout .resources/tables --fields_info customers:age,balance,full_name,updated_at,status
+mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
 ```
 
-**Stdout Response (JSON):**
+**Stdout Response (JSON) [Exit Code: 1]:**
 
 ```json
 [
-  {"field":"age","type":"TINYINT","nullable":true,"default":null,"unsigned":true},
-  {"field":"balance","type":"DECIMAL","nullable":false,"default":0,"precision":15,"scale":2},
-  {"field":"full_name","type":"VARCHAR","nullable":true,"default":null,"length":400,"generated":"stored"},
-  {"field":"updated_at","type":"TIMESTAMP","nullable":true,"default":"CURRENT_TIMESTAMP","on_update":"CURRENT_TIMESTAMP"},
-  {"field":"status","type":"ENUM","nullable":false,"default":"pending","values":["pending","active","blocked","deleted"]}
+  {"field":"id","type":"CHAR","nullable":false,"default":null,"length":36},
+  {"field":"name","type":"VARCHAR","nullable":false,"default":null,"length":255},
+  {"field":"opa","exists":false}
 ]
 ```
 

@@ -242,22 +242,37 @@ function handleFieldsInfo(folder, tableAndFields) {
         fail('Invalid format. Use table:field1,field2');
     }
 
-    const targetFields = fieldsRaw.split(',').map((field) => field.trim().toLowerCase());
+    const targetFieldNames = fieldsRaw.split(',').map((field) => field.trim()).filter(Boolean);
+    if (targetFieldNames.length === 0) {
+        fail('Invalid format. Use table:field1,field2');
+    }
+
     const ast = loadAndParseDDL(folder, table);
-    const fields = [];
+    const foundByName = new Map();
     const definitions = ast.create_definitions || [];
 
     for (const def of definitions) {
         if (!def.column?.column) continue;
 
         const fieldName = stripBackticks(def.column.column);
-        if (!targetFields.includes(fieldName.toLowerCase())) continue;
+        foundByName.set(fieldName.toLowerCase(), buildFieldInfo(def));
+    }
 
-        fields.push(buildFieldInfo(def));
+    const fields = [];
+    let hasMissing = false;
+
+    for (const requestedField of targetFieldNames) {
+        const found = foundByName.get(requestedField.toLowerCase());
+        if (found) {
+            fields.push(found);
+        } else {
+            hasMissing = true;
+            fields.push({ field: requestedField, exists: false });
+        }
     }
 
     console.log(JSON.stringify(fields));
-    process.exit(0);
+    process.exit(hasMissing ? 1 : 0);
 }
 
 function handleKeysInfo(folder, table) {
