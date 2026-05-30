@@ -1,0 +1,28 @@
+{
+  "name": "mysql-ddl-scout",
+  "version": "1.0.0",
+  "description": "CLI tool to inspect MySQL DDL files for Claude Code and scripts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marceloxp/mysql-ddl-scout.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mysql-ddl-scout": "./index.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "node-sql-parser": "^4.18.0"
+  },
+  "bugs": {
+    "url": "https://github.com/marceloxp/mysql-ddl-scout/issues"
+  },
+  "homepage": "https://github.com/marceloxp/mysql-ddl-scout#readme"
+}
