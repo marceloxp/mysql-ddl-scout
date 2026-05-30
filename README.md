@@ -99,7 +99,9 @@ mysql-ddl-scout .resources/tables --keys_info customers
       "name":"customers_company_id_foreign",
       "local_columns":["company_id"],
       "referenced_table":"companies",
-      "referenced_columns":["id"]
+      "referenced_columns":["id"],
+      "on_delete":"CASCADE",
+      "on_update":"CASCADE"
     }
   ]
 }
@@ -120,7 +122,9 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
       "name":"fk_customer_addresses_customer",
       "local_columns":["customer_id","company_id"],
       "referenced_table":"customers",
-      "referenced_columns":["id","company_id"]
+      "referenced_columns":["id","company_id"],
+      "on_delete":"CASCADE",
+      "on_update":"CASCADE"
     }
   ]
 }

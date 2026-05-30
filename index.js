@@ -202,6 +202,20 @@ function extractReferencedTable(referenceDefinition) {
     return stripBackticks(tableRef?.table ?? '');
 }
 
+function extractForeignKeyActions(referenceDefinition) {
+    const onAction = referenceDefinition?.on_action;
+    if (!Array.isArray(onAction)) return {};
+
+    const actions = {};
+    for (const item of onAction) {
+        const actionValue = item.value?.value?.toUpperCase?.() ?? item.value?.value;
+        if (!actionValue) continue;
+        if (item.type === 'on delete') actions.on_delete = actionValue;
+        if (item.type === 'on update') actions.on_update = actionValue;
+    }
+    return actions;
+}
+
 function handleExists(folder, tables) {
     const results = tables.map((table) => {
         const resolved = resolveTableFile(folder, table);
@@ -277,6 +291,7 @@ function handleKeysInfo(folder, table) {
                 local_columns: extractColumnNames(def.definition),
                 referenced_table: extractReferencedTable(def.reference_definition),
                 referenced_columns: extractColumnNames(def.reference_definition?.definition),
+                ...extractForeignKeyActions(def.reference_definition),
             });
         }
     }
