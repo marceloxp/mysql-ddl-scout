@@ -18,6 +18,7 @@ program
     .option('--exists <tables...>', 'Check if one or more table DDL files exist')
     .option('--fields_info <table_and_fields>', 'Return field metadata (format: table:field1,field2)')
     .option('--keys_info <table>', 'Return primary keys, indexes, and foreign keys for a table')
+    .option('--ast <table>', 'Return the node-sql-parser AST for a table DDL')
     .action((folder, options) => {
         const targetFolder = path.resolve(folder);
 
@@ -40,7 +41,12 @@ program
             return;
         }
 
-        fail('No command specified. Use --exists, --fields_info, or --keys_info.');
+        if (options.ast) {
+            handleAst(targetFolder, options.ast);
+            return;
+        }
+
+        fail('No command specified. Use --exists, --fields_info, --keys_info, or --ast.');
     });
 
 function fail(message) {
@@ -88,15 +94,29 @@ function stripBackticks(value) {
 
 function extractLength(definition) {
     const length = definition?.length;
-    const scale = definition?.scale;
     if (length == null) return null;
-    if (scale != null) return [length, scale];
     if (Array.isArray(length)) {
         const first = length[0];
         if (first == null) return null;
         return typeof first === 'object' && first.value != null ? first.value : first;
     }
     return length;
+}
+
+function extractUnsigned(definition) {
+    return definition?.suffix?.includes('UNSIGNED') ?? false;
+}
+
+function extractGenerated(def) {
+    const storageType = def.generated?.storage_type;
+    if (!storageType) return null;
+    return storageType.toLowerCase();
+}
+
+function extractOnUpdate(def) {
+    const over = def.default_val?.value?.over;
+    if (over?.type !== 'on update') return null;
+    return over.keyword ?? null;
 }
 
 function extractNullable(def) {
@@ -133,7 +153,8 @@ function extractTypeValues(definition) {
 
 function buildFieldInfo(def) {
     const fieldName = stripBackticks(def.column.column);
-    const dataType = def.definition?.dataType?.toUpperCase?.() ?? def.definition?.dataType ?? null;
+    const definition = def.definition;
+    const dataType = definition?.dataType?.toUpperCase?.() ?? definition?.dataType ?? null;
 
     const field = {
         field: fieldName,
@@ -142,10 +163,32 @@ function buildFieldInfo(def) {
         default: extractDefault(def),
     };
 
+    if (extractUnsigned(definition)) {
+        field.unsigned = true;
+    }
+
+    const generated = extractGenerated(def);
+    if (generated) {
+        field.generated = generated;
+    }
+
+    const onUpdate = extractOnUpdate(def);
+    if (onUpdate) {
+        field.on_update = onUpdate;
+    }
+
     if (dataType === 'ENUM' || dataType === 'SET') {
-        field.values = extractTypeValues(def.definition);
+        field.values = extractTypeValues(definition);
+    } else if (dataType === 'DECIMAL') {
+        if (definition?.length != null) {
+            field.precision = definition.length;
+            field.scale = definition.scale ?? null;
+        }
     } else {
-        field.length = extractLength(def.definition);
+        const length = extractLength(definition);
+        if (length != null) {
+            field.length = length;
+        }
     }
 
     return field;
@@ -239,6 +282,12 @@ function handleKeysInfo(folder, table) {
     }
 
     console.log(JSON.stringify(keys));
+    process.exit(0);
+}
+
+function handleAst(folder, table) {
+    const ast = loadAndParseDDL(folder, table);
+    console.log(JSON.stringify(ast));
     process.exit(0);
 }
 

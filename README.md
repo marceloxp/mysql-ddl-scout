@@ -10,7 +10,7 @@ Built specifically for developers, automation scripts, and LLM Agents (such as *
 - **Table Existence Checking**: Scan one or more tables and get absolute file paths when found.
 - **Granular Field Inspection**: Extract column data types, lengths, ENUM/SET values, nullability, and defaults.
 - **Relational Map Engine**: Primary keys, indexes (including UNIQUE), prefix indexes, and foreign keys with composite column mapping.
-- **Agnostic File Matching**: Resolves filenames natively whether they are stored as `table.sql`, `table.ddl`, or extensionless files.
+- **AST Dump**: Output the `node-sql-parser` AST for debugging and advanced inspection.
 
 ## Installation
 
@@ -28,7 +28,7 @@ npm link
 
 ## Usage Syntax
 
-The CLI exposes three specialized analytical flags:
+The CLI exposes four specialized analytical flags:
 
 ```bash
 mysql-ddl-scout <folder_path> [options]
@@ -56,20 +56,21 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 
 Extracts attributes for specified columns of a single table. Format: `table_name:column1,column2,column3`.
 
-ENUM and SET columns include a `values` array. DECIMAL columns use `[precision, scale]` for `length`. Function defaults (e.g. `CURRENT_TIMESTAMP`) are returned as strings.
+ENUM and SET columns include a `values` array. DECIMAL columns use `precision` and `scale`. Function defaults (e.g. `CURRENT_TIMESTAMP`) are returned as strings.
 
 ```bash
-mysql-ddl-scout .resources/tables --fields_info customers:balance,status,permissions,created_at
+mysql-ddl-scout .resources/tables --fields_info customers:age,balance,full_name,updated_at,status
 ```
 
 **Stdout Response (JSON):**
 
 ```json
 [
-  {"field":"balance","type":"DECIMAL","nullable":false,"default":0,"length":[15,2]},
-  {"field":"status","type":"ENUM","nullable":false,"default":"pending","values":["pending","active","blocked","deleted"]},
-  {"field":"permissions","type":"SET","nullable":true,"default":null,"values":["read","write","delete","admin"]},
-  {"field":"created_at","type":"TIMESTAMP","nullable":true,"default":"CURRENT_TIMESTAMP","length":null}
+  {"field":"age","type":"TINYINT","nullable":true,"default":null,"unsigned":true},
+  {"field":"balance","type":"DECIMAL","nullable":false,"default":0,"precision":15,"scale":2},
+  {"field":"full_name","type":"VARCHAR","nullable":true,"default":null,"length":400,"generated":"stored"},
+  {"field":"updated_at","type":"TIMESTAMP","nullable":true,"default":"CURRENT_TIMESTAMP","on_update":"CURRENT_TIMESTAMP"},
+  {"field":"status","type":"ENUM","nullable":false,"default":"pending","values":["pending","active","blocked","deleted"]}
 ]
 ```
 
@@ -125,9 +126,28 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 }
 ```
 
+### 4. Parser AST (`--ast`)
+
+Returns the `node-sql-parser` AST for a single table DDL. Useful for debugging parser output or building custom tooling on top of the AST.
+
+```bash
+mysql-ddl-scout .resources/tables --ast customer_addresses
+```
+
+**Stdout Response (JSON):** the full CREATE TABLE AST node (truncated example):
+
+```json
+{
+  "type":"create",
+  "table":[{"db":null,"table":"customer_addresses","as":null}],
+  "create_definitions":[...],
+  "table_options":[...]
+}
+```
+
 ## Error Pipeline
 
-If an operational error occurs (e.g., folder not found, empty DDL file, table file missing for `--fields_info`/`--keys_info`, or invalid MySQL syntax), `mysql-ddl-scout` writes a structured JSON diagnostic to `stderr` and exits with code `1`.
+If an operational error occurs (e.g., folder not found, empty DDL file, table file missing for `--fields_info`/`--keys_info`/`--ast`, or invalid MySQL syntax), `mysql-ddl-scout` writes a structured JSON diagnostic to `stderr` and exits with code `1`.
 
 ```bash
 mysql-ddl-scout .resources/tables --keys_info missing_table
