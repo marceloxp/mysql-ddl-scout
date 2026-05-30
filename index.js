@@ -16,7 +16,7 @@ program
     .version('1.0.0')
     .argument('<folder>', 'Path to the folder containing DDL files')
     .option('--exists <tables...>', 'Check if one or more table DDL files exist')
-    .option('--fields_info <table_and_fields>', 'Return field metadata (format: table:field1,field2)')
+    .option('--fields_info <table_and_fields>', 'Return field metadata (format: table or table:field1,field2)')
     .option('--keys_info <table>', 'Return primary keys, indexes, and foreign keys for a table')
     .option('--ast <table>', 'Return the node-sql-parser AST for a table DDL')
     .action((folder, options) => {
@@ -232,28 +232,38 @@ function handleExists(folder, tables) {
 
 function handleFieldsInfo(folder, tableAndFields) {
     const colonIndex = tableAndFields.indexOf(':');
+    let table;
+    let targetFieldNames = null;
+
     if (colonIndex === -1) {
-        fail('Invalid format. Use table:field1,field2');
-    }
+        table = tableAndFields.trim();
+        if (!table) {
+            fail('Invalid format. Use table or table:field1,field2');
+        }
+    } else {
+        table = tableAndFields.slice(0, colonIndex);
+        const fieldsRaw = tableAndFields.slice(colonIndex + 1);
+        if (!table || !fieldsRaw) {
+            fail('Invalid format. Use table or table:field1,field2');
+        }
 
-    const table = tableAndFields.slice(0, colonIndex);
-    const fieldsRaw = tableAndFields.slice(colonIndex + 1);
-    if (!table || !fieldsRaw) {
-        fail('Invalid format. Use table:field1,field2');
-    }
-
-    const targetFieldNames = fieldsRaw.split(',').map((field) => field.trim()).filter(Boolean);
-    if (targetFieldNames.length === 0) {
-        fail('Invalid format. Use table:field1,field2');
+        targetFieldNames = fieldsRaw.split(',').map((field) => field.trim()).filter(Boolean);
+        if (targetFieldNames.length === 0) {
+            fail('Invalid format. Use table or table:field1,field2');
+        }
     }
 
     const ast = loadAndParseDDL(folder, table);
+    const columnDefinitions = (ast.create_definitions || []).filter((def) => def.column?.column);
+
+    if (targetFieldNames === null) {
+        const fields = columnDefinitions.map((def) => buildFieldInfo(def));
+        console.log(JSON.stringify(fields));
+        process.exit(0);
+    }
+
     const foundByName = new Map();
-    const definitions = ast.create_definitions || [];
-
-    for (const def of definitions) {
-        if (!def.column?.column) continue;
-
+    for (const def of columnDefinitions) {
         const fieldName = stripBackticks(def.column.column);
         foundByName.set(fieldName.toLowerCase(), buildFieldInfo(def));
     }

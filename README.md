@@ -54,9 +54,23 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 
 ### 2. Inspect Column Metadata (`--fields_info`)
 
-Extracts attributes for specified columns of a single table. Format: `table_name:column1,column2,column3`. Results follow the requested field order. Unknown fields are included as `{"field":"...","exists":false}` and the command exits with code `1`.
+Extracts attributes for specified columns of a single table, or all columns when only the table name is given. Format: `table_name` or `table_name:column1,column2,column3`. Results follow DDL order when returning all fields, or the requested field order when specific columns are listed. Unknown fields are included as `{"field":"...","exists":false}` and the command exits with code `1`.
 
-ENUM and SET columns include a `values` array. DECIMAL columns use `precision` and `scale`. Function defaults (e.g. `CURRENT_TIMESTAMP`) are returned as strings.
+```bash
+mysql-ddl-scout .resources/tables --fields_info customers
+```
+
+**Stdout Response (JSON):** all columns in DDL order (truncated):
+
+```json
+[
+  {"field":"id","type":"CHAR","nullable":false,"default":null,"length":36},
+  {"field":"company_id","type":"CHAR","nullable":false,"default":null,"length":36},
+  {"field":"status","type":"ENUM","nullable":false,"default":"pending","values":["pending","active","blocked","deleted"]}
+]
+```
+
+Specific fields with a missing column:
 
 ```bash
 mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
