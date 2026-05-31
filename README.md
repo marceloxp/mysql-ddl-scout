@@ -1,5 +1,7 @@
 # mysql-ddl-scout
 
+![banner](https://raw.githubusercontent.com/marceloxp/mysql-ddl-scout/refs/heads/main/images/mysql-ddl-scout.png)
+
 ![Version](https://img.shields.io/github/package-json/v/marceloxp/mysql-ddl-scout)
 ![License](https://img.shields.io/github/license/marceloxp/mysql-ddl-scout)
 ![Tests](https://github.com/marceloxp/mysql-ddl-scout/actions/workflows/test.yml/badge.svg)
