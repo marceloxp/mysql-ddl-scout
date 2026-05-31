@@ -38,6 +38,25 @@ You can also run the latest published version directly with `npx`:
 npx mysql-ddl-scout <folder_path> [options]
 ```
 
+## Agent Skill
+
+Install the agent skill so coding agents (Cursor, Claude Code, Codex, and others) know when and how to invoke this CLI. The skill is distributed via the [open agent skills ecosystem](https://agentskills.io) using the [skills CLI](https://www.npmjs.com/package/skills):
+
+```bash
+npx skills add marceloxp/mysql-ddl-scout
+```
+
+The CLI auto-detects installed agents and prompts you to choose installation scope (project or global) and target agents interactively.
+
+Optional flags (your choice):
+
+- `--skill mysql-ddl-scout` — install only this skill (useful if the repo contains multiple skills)
+- `-g`, `--global` — install to your user directory instead of the current project
+- `-a <agent>` — advanced override to target a specific agent; omit for multi-agent compatibility
+- `--list` — preview available skills without installing
+
+The skill teaches agents how to call the CLI; you still need the CLI itself (`npm install -g mysql-ddl-scout` or `npx mysql-ddl-scout`). Discover more skills at [skills.sh](https://skills.sh).
+
 ### 1. Locate Table Schema Files (`--exists`)
 
 Verifies whether one or more table DDL files exist in the target folder. Accepts multiple table names separated by spaces. Always exits with code `0`; each result includes `exists` and `path` (`null` when not found).

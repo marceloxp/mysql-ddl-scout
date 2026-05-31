@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/marceloxp/mysql-ddl-scout.git"
   },
-  "keywords": [],
+  "keywords": ["mysql", "ddl", "agent-skills", "cursor", "claude-code"],
   "author": "",
   "license": "MIT",
   "type": "module",

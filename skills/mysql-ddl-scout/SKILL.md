@@ -1,0 +1,76 @@
+---
+name: mysql-ddl-scout
+description: Inspects MySQL DDL files offline and returns strict JSON for table existence, columns, keys, and parser AST. Use when exploring database schemas from .sql/.ddl files, validating columns or foreign keys, or when the user mentions MySQL DDL, schema inspection, or table metadata without a live database.
+---
+
+# mysql-ddl-scout
+
+Inspect MySQL DDL files (one table per file) offline and get structured JSON via the `mysql-ddl-scout` CLI.
+
+## Prerequisites
+
+The CLI must be available on the machine:
+
+- Global: `mysql-ddl-scout` (after `npm install -g mysql-ddl-scout`)
+- Ephemeral: `npx mysql-ddl-scout` (no install)
+
+This skill tells the agent **when and how** to call the CLI. It does not replace the CLI.
+
+## Resolve the DDL folder
+
+Identify `<ddl_folder>` from the project context — common locations include `db/`, `schema/`, `migrations/`, `sql/`, or `database/`. Prefer an absolute path. Each table is stored as `tableName.sql`, `tableName.ddl`, or `tableName` (no extension).
+
+## Recommended workflow
+
+1. **`--exists`** — confirm table files exist before deeper inspection
+2. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
+3. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
+4. **`--ast`** — parser AST only when debugging parser output or building custom tooling
+
+## Commands
+
+Replace `<ddl_folder>` and `<table>` with actual values. Prefix with `npx` when the CLI is not installed globally.
+
+```bash
+mysql-ddl-scout <ddl_folder> --exists <table> [table...]
+mysql-ddl-scout <ddl_folder> --fields_info <table>
+mysql-ddl-scout <ddl_folder> --fields_info <table>:<col1>,<col2>
+mysql-ddl-scout <ddl_folder> --keys_info <table>
+mysql-ddl-scout <ddl_folder> --ast <table>
+```
+
+### `--exists`
+
+- Accepts one or more table names (space-separated)
+- Always exits `0` on success
+- Returns JSON array: `{ "table", "exists", "path" }` (`path` is absolute when found, `null` otherwise)
+
+### `--fields_info`
+
+- Single table only
+- Format: `table` (all columns, DDL order) or `table:col1,col2` (requested order)
+- Unknown columns appear as `{ "field": "...", "exists": false }` with exit code `1`
+- ENUM/SET include `values`; DECIMAL uses `precision` and `scale`; numeric types may include `unsigned: true`; generated columns include `generated` (`stored`|`virtual`); timestamps may include `on_update`
+
+### `--keys_info`
+
+- Single table only
+- Returns `{ "primary_keys", "indexes", "foreign_keys" }`
+- Unique indexes include `"unique": true`
+- Foreign keys include `on_delete` and `on_update` when defined
+- Prefix indexes preserve length suffix (e.g. `"name(20)"`)
+
+### `--ast`
+
+- Single table only
+- Returns the `node-sql-parser` CREATE TABLE AST node as JSON
+
+## Output contract
+
+- **Success**: minified JSON on `stdout` only — no banners, markdown, or extra text
+- **Operational error**: `{"error":"message"}` on `stderr`, exit code `1`
+- Parse `stdout` as JSON; on non-zero exit, read and parse `stderr` as JSON when present
+
+## Examples
+
+For concrete command/output samples, see [examples.md](examples.md).
