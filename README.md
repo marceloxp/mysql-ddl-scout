@@ -1,5 +1,9 @@
 # mysql-ddl-scout
 
+![Version](https://img.shields.io/github/package-json/v/marceloxp/mysql-ddl-scout)
+![License](https://img.shields.io/github/license/marceloxp/mysql-ddl-scout)
+![Tests](https://github.com/marceloxp/mysql-ddl-scout/actions/workflows/test.yml/badge.svg)
+
 A blazing fast, lightweight Node.js CLI tool designed to parse MySQL DDL scripts and instantly extract structured metadata as clean JSON.
 
 Built specifically for developers, automation scripts, and LLM Agents (such as **Claude Code** and **Cursor IDE**) to inspect, validate, and understand complex database schemas entirely offline, without requiring a running MySQL instance.
