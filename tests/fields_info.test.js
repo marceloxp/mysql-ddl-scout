@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { runCli, TABLES_DIR } from './helpers/run-cli.js';
 
+/* eslint-disable max-lines-per-function */
 describe('--fields_info', () => {
   test('should return metadata for a specific field', () => {
     const { status, json } = runCli([TABLES_DIR, '--fields_info', 'customers:name']);
@@ -121,3 +122,4 @@ describe('--fields_info', () => {
     expect(json[1]).not.toHaveProperty('on_update');
   });
 });
+/* eslint-enable max-lines-per-function */

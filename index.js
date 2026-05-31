@@ -182,6 +182,34 @@ function extractTypeValues(definition) {
   return exprList.map((item) => item.value ?? item);
 }
 
+function applyDecimalProps(field, definition) {
+  const decimalLength = definition?.length;
+  if (decimalLength === null || decimalLength === undefined) {
+    return;
+  }
+  field.precision = definition.length;
+  field.scale = definition.scale ?? null;
+}
+
+function applyLengthProps(field, definition) {
+  const length = extractLength(definition);
+  if (length !== null && length !== undefined) {
+    field.length = length;
+  }
+}
+
+function applyDataTypeProps(field, dataType, definition) {
+  if (dataType === 'ENUM' || dataType === 'SET') {
+    field.values = extractTypeValues(definition);
+    return;
+  }
+  if (dataType === 'DECIMAL') {
+    applyDecimalProps(field, definition);
+    return;
+  }
+  applyLengthProps(field, definition);
+}
+
 function buildFieldInfo(def) {
   const fieldName = stripBackticks(def.column.column);
   const definition = def.definition;
@@ -208,20 +236,7 @@ function buildFieldInfo(def) {
     field.on_update = onUpdate;
   }
 
-  if (dataType === 'ENUM' || dataType === 'SET') {
-    field.values = extractTypeValues(definition);
-  } else if (dataType === 'DECIMAL') {
-    const decimalLength = definition?.length;
-    if (decimalLength !== null && decimalLength !== undefined) {
-      field.precision = definition.length;
-      field.scale = definition.scale ?? null;
-    }
-  } else {
-    const length = extractLength(definition);
-    if (length !== null && length !== undefined) {
-      field.length = length;
-    }
-  }
+  applyDataTypeProps(field, dataType, definition);
 
   return field;
 }

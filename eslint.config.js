@@ -11,6 +11,9 @@ export default defineConfig([
       globals: globals.node
     },
     rules: {
+      complexity: ["error", 15],
+      "max-lines-per-function": ["error", 80],
+      "max-depth": ["error", 4],
       eqeqeq: "error",
       "prefer-const": "error",
       "no-var": "error",
