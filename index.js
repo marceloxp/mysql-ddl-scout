@@ -94,11 +94,17 @@ function stripBackticks(value) {
 
 function extractLength(definition) {
     const length = definition?.length;
-    if (length == null) return null;
+    if (length === null || length === undefined) {
+        return null;
+    }
     if (Array.isArray(length)) {
         const first = length[0];
-        if (first == null) return null;
-        return typeof first === 'object' && first.value != null ? first.value : first;
+        if (first === null || first === undefined) {
+            return null;
+        }
+        return typeof first === 'object' && first.value !== null && first.value !== undefined
+            ? first.value
+            : first;
     }
     return length;
 }
@@ -109,36 +115,46 @@ function extractUnsigned(definition) {
 
 function extractGenerated(def) {
     const storageType = def.generated?.storage_type;
-    if (!storageType) return null;
+    if (!storageType) {return null;}
     return storageType.toLowerCase();
 }
 
 function extractOnUpdate(def) {
     const over = def.default_val?.value?.over;
-    if (over?.type !== 'on update') return null;
+    if (over?.type !== 'on update') {return null;}
     return over.keyword ?? null;
 }
 
 function extractNullable(def) {
-    if (!def.nullable) return true;
-    if (def.nullable.value === 'not null') return false;
+    if (!def.nullable) {return true;}
+    if (def.nullable.value === 'not null') {return false;}
     return true;
 }
 
 function extractDefault(def) {
-    if (!def.default_val) return null;
+    if (!def.default_val) {
+        return null;
+    }
     const value = def.default_val.value;
-    if (value == null) return null;
+    if (value === null || value === undefined) {
+        return null;
+    }
     if (typeof value === 'object') {
-        if (value.type === 'null') return null;
-        if (value.type === 'function') return value.name;
-        if (value.value != null) return value.value;
+        if (value.type === 'null') {
+            return null;
+        }
+        if (value.type === 'function') {
+            return value.name;
+        }
+        if (value.value !== null && value.value !== undefined) {
+            return value.value;
+        }
     }
     return value;
 }
 
 function extractColumnNames(definition) {
-    if (!Array.isArray(definition)) return [];
+    if (!Array.isArray(definition)) {return [];}
     return definition.map((column) => {
         const name = stripBackticks(column.column);
         return column.suffix ? `${name}${column.suffix}` : name;
@@ -147,7 +163,7 @@ function extractColumnNames(definition) {
 
 function extractTypeValues(definition) {
     const exprList = definition?.expr?.value;
-    if (!Array.isArray(exprList)) return [];
+    if (!Array.isArray(exprList)) {return [];}
     return exprList.map((item) => item.value ?? item);
 }
 
@@ -180,13 +196,14 @@ function buildFieldInfo(def) {
     if (dataType === 'ENUM' || dataType === 'SET') {
         field.values = extractTypeValues(definition);
     } else if (dataType === 'DECIMAL') {
-        if (definition?.length != null) {
+        const decimalLength = definition?.length;
+        if (decimalLength !== null && decimalLength !== undefined) {
             field.precision = definition.length;
             field.scale = definition.scale ?? null;
         }
     } else {
         const length = extractLength(definition);
-        if (length != null) {
+        if (length !== null && length !== undefined) {
             field.length = length;
         }
     }
@@ -204,14 +221,14 @@ function extractReferencedTable(referenceDefinition) {
 
 function extractForeignKeyActions(referenceDefinition) {
     const onAction = referenceDefinition?.on_action;
-    if (!Array.isArray(onAction)) return {};
+    if (!Array.isArray(onAction)) {return {};}
 
     const actions = {};
     for (const item of onAction) {
         const actionValue = item.value?.value?.toUpperCase?.() ?? item.value?.value;
-        if (!actionValue) continue;
-        if (item.type === 'on delete') actions.on_delete = actionValue;
-        if (item.type === 'on update') actions.on_update = actionValue;
+        if (!actionValue) {continue;}
+        if (item.type === 'on delete') {actions.on_delete = actionValue;}
+        if (item.type === 'on update') {actions.on_update = actionValue;}
     }
     return actions;
 }

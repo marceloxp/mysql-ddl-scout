@@ -4,13 +4,20 @@
   "description": "CLI tool to inspect MySQL DDL files for Claude Code and scripts",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "vitest"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marceloxp/mysql-ddl-scout.git"
   },
-  "keywords": ["mysql", "ddl", "agent-skills", "cursor", "claude-code"],
+  "keywords": [
+    "mysql",
+    "ddl",
+    "agent-skills",
+    "cursor",
+    "claude-code"
+  ],
   "author": "",
   "license": "MIT",
   "type": "module",
@@ -26,6 +33,9 @@
   },
   "homepage": "https://github.com/marceloxp/mysql-ddl-scout#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "globals": "^17.6.0",
     "vitest": "^4.1.7"
   }
 }
