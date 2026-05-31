@@ -14,24 +14,24 @@ Built specifically for developers, automation scripts, and LLM Agents (such as *
 
 ## Installation
 
-To install `mysql-ddl-scout` locally and expose it globally in your terminal environment:
+Install globally with npm:
 
 ```bash
-# Clone the repository
-git clone git@github.com:marceloxp/mysql-ddl-scout.git
-cd mysql-ddl-scout
-
-# Install dependencies and link the binary globally
-npm install
-npm link
+npm install -g mysql-ddl-scout
 ```
 
-## Usage Syntax
-
-The CLI exposes four specialized analytical flags:
+After installation, the CLI will be available system-wide:
 
 ```bash
 mysql-ddl-scout <folder_path> [options]
+```
+
+## Usage Without Installation
+
+You can also run the latest published version directly with `npx`:
+
+```bash
+npx mysql-ddl-scout <folder_path> [options]
 ```
 
 ### 1. Locate Table Schema Files (`--exists`)
@@ -174,6 +174,20 @@ mysql-ddl-scout .resources/tables --keys_info missing_table
 ```json
 {"error":"File for table 'missing_table' not found."}
 ```
+
+## Development
+
+Clone the repository and install dependencies:
+
+```bash
+git clone git@github.com:marceloxp/mysql-ddl-scout.git
+cd mysql-ddl-scout
+
+npm install
+npm link
+```
+
+The `npm link` command exposes the local development version globally on your machine.
 
 ## Contributing
 
