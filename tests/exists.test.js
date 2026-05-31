@@ -1,161 +1,55 @@
 import { describe, expect, test } from 'vitest';
-import { spawnSync } from 'node:child_process';
+import { resolveTablePath, runCli, TABLES_DIR } from './helpers/run-cli.js';
 
 describe('--exists', () => {
-    test('should find customers table', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--exists',
-                'customers'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
+    test('should find a single table with absolute path', () => {
+        const { status, json } = runCli([TABLES_DIR, '--exists', 'customers']);
 
-        expect(result.status).toBe(0);
-
-        const json = JSON.parse(result.stdout);
-
+        expect(status).toBe(0);
         expect(json).toHaveLength(1);
-
         expect(json[0]).toMatchObject({
             table: 'customers',
-            exists: true
+            exists: true,
+            path: resolveTablePath('customers'),
         });
     });
 
     test('should return false for missing table', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--exists',
-                'non_existent_table'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
+        const { status, json } = runCli([TABLES_DIR, '--exists', 'non_existent_table']);
 
-        expect(result.status).toBe(0);
-
-        const json = JSON.parse(result.stdout);
-
+        expect(status).toBe(0);
         expect(json[0]).toMatchObject({
             table: 'non_existent_table',
             exists: false,
-            path: null
+            path: null,
         });
     });
-});
 
-describe('--fields_info', () => {
-    test('should return metadata for a specific field', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--fields_info',
-                'customers:name'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
+    test('should handle multiple tables in one call', () => {
+        const { status, json } = runCli([
+            TABLES_DIR,
+            '--exists',
+            'customers',
+            'customer_addresses',
+            'missing_table',
+        ]);
 
-        expect(result.status).toBe(0);
-
-        const json = JSON.parse(result.stdout);
-
-        expect(json).toHaveLength(1);
-
+        expect(status).toBe(0);
+        expect(json).toHaveLength(3);
         expect(json[0]).toMatchObject({
-            field: 'name',
-            type: 'VARCHAR',
-            nullable: false,
-            length: 255
+            table: 'customers',
+            exists: true,
+            path: resolveTablePath('customers'),
         });
-    });
-
-    test('should return metadata for all fields', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--fields_info',
-                'customers'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
-
-        expect(result.status).toBe(0);
-
-        const json = JSON.parse(result.stdout);
-
-        expect(json).toHaveLength(23);
-
-        expect(json[0]).toMatchObject({
-            field: 'id',
-            type: 'CHAR',
-            nullable: false,
-            length: 36
+        expect(json[1]).toMatchObject({
+            table: 'customer_addresses',
+            exists: true,
+            path: resolveTablePath('customer_addresses'),
         });
-    });
-
-    test('should preserve requested field order', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--fields_info',
-                'customers:name,id'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
-
-        expect(result.status).toBe(0);
-
-        const json = JSON.parse(result.stdout);
-
-        expect(json[0].field).toBe('name');
-        expect(json[1].field).toBe('id');
-    });
-
-    test('should report missing fields', () => {
-        const result = spawnSync(
-            'node',
-            [
-                'index.js',
-                '.resources/tables',
-                '--fields_info',
-                'customers:id,ops'
-            ],
-            {
-                encoding: 'utf8'
-            }
-        );
-
-        expect(result.status).toBe(1);
-
-        const json = JSON.parse(result.stdout);
-
-        expect(json[0].field).toBe('id');
-
-        expect(json[1]).toEqual({
-            field: 'ops',
-            exists: false
+        expect(json[2]).toMatchObject({
+            table: 'missing_table',
+            exists: false,
+            path: null,
         });
     });
 });
