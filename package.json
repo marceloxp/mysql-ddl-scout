@@ -4,8 +4,11 @@
   "description": "CLI tool to inspect MySQL DDL files for Claude Code and scripts",
   "main": "index.js",
   "scripts": {
+    "test": "vitest",
     "lint": "eslint .",
-    "test": "vitest"
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write index.js \"tests/**/*.js\"",
+    "format:check": "prettier --check index.js \"tests/**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -36,6 +39,7 @@
     "@eslint/js": "^10.0.1",
     "eslint": "^10.4.1",
     "globals": "^17.6.0",
+    "prettier": "^3.8.3",
     "vitest": "^4.1.7"
   }
 }
