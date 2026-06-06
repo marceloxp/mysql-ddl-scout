@@ -24,7 +24,7 @@ describe('errors', () => {
 
     expect(status).toBe(1);
     expect(error).toEqual({
-      error: 'No command specified. Use --exists, --fields_info, --keys_info, or --ast.',
+      error: 'No command specified. Use --exists, --fields, --fields_info, --keys_info, or --ast.',
     });
   });
 

@@ -16,6 +16,7 @@ program
   .version('1.0.0')
   .argument('<folder>', 'Path to the folder containing DDL files')
   .option('--exists <tables...>', 'Check if one or more table DDL files exist')
+  .option('--fields <tables...>', 'Return only the column names for one or more tables')
   .option(
     '--fields_info <table_and_fields>',
     'Return field metadata (format: table or table:field1,field2)'
@@ -34,6 +35,11 @@ program
       return;
     }
 
+    if (options.fields?.length) {
+      handleFields(targetFolder, options.fields);
+      return;
+    }
+
     if (options.fields_info) {
       handleFieldsInfo(targetFolder, options.fields_info);
       return;
@@ -49,7 +55,7 @@ program
       return;
     }
 
-    fail('No command specified. Use --exists, --fields_info, --keys_info, or --ast.');
+    fail('No command specified. Use --exists, --fields, --fields_info, --keys_info, or --ast.');
   });
 
 function fail(message) {
@@ -68,27 +74,37 @@ function resolveTableFile(folder, table) {
   return { exists: false, filePath: null };
 }
 
-function loadAndParseDDL(folder, table) {
+function tryLoadAndParseDDL(folder, table) {
   const resolved = resolveTableFile(folder, table);
   if (!resolved.exists) {
-    fail(`File for table '${table}' not found.`);
+    return { error: `File for table '${table}' not found.` };
   }
 
   try {
     const ddlText = fs.readFileSync(resolved.filePath, 'utf-8').trim();
     if (!ddlText) {
-      fail(`Failed to parse SQL syntax for '${table}': empty file.`);
+      return { error: `Failed to parse SQL syntax for '${table}': empty file.` };
     }
 
     const ast = parser.astify(ddlText, { database: 'MySQL' });
     const node = Array.isArray(ast) ? ast[0] : ast;
     if (!node?.create_definitions) {
-      fail(`Failed to parse SQL syntax for '${table}': no CREATE TABLE statement found.`);
+      return {
+        error: `Failed to parse SQL syntax for '${table}': no CREATE TABLE statement found.`,
+      };
     }
-    return node;
+    return { node };
   } catch (error) {
-    fail(`Failed to parse SQL syntax for '${table}': ${error.message}`);
+    return { error: `Failed to parse SQL syntax for '${table}': ${error.message}` };
   }
+}
+
+function loadAndParseDDL(folder, table) {
+  const { node, error } = tryLoadAndParseDDL(folder, table);
+  if (error) {
+    fail(error);
+  }
+  return node;
 }
 
 function stripBackticks(value) {
@@ -283,6 +299,27 @@ function handleExists(folder, tables) {
 
   console.log(JSON.stringify(results));
   process.exit(0);
+}
+
+function handleFields(folder, tables) {
+  let hasError = false;
+
+  const results = tables.map((table) => {
+    const { node, error } = tryLoadAndParseDDL(folder, table);
+    if (error) {
+      hasError = true;
+      return { name: table, error };
+    }
+
+    const fields = (node.create_definitions || [])
+      .filter((def) => def.column?.column)
+      .map((def) => stripBackticks(def.column.column));
+
+    return { name: table, fields };
+  });
+
+  console.log(JSON.stringify(results));
+  process.exit(hasError ? 1 : 0);
 }
 
 function handleFieldsInfo(folder, tableAndFields) {

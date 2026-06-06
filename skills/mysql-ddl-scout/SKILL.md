@@ -23,9 +23,10 @@ Identify `<ddl_folder>` from the project context — common locations include `d
 ## Recommended workflow
 
 1. **`--exists`** — confirm table files exist before deeper inspection
-2. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
-3. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
-4. **`--ast`** — parser AST only when debugging parser output or building custom tooling
+2. **`--fields`** — when you only need the column names of one or more tables, use this. Do NOT call `--fields_info` and post-process it with `grep`/`tr`/`jq` just to extract names.
+3. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
+4. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
+5. **`--ast`** — parser AST only when debugging parser output or building custom tooling
 
 ## Commands
 
@@ -33,6 +34,7 @@ Replace `<ddl_folder>` and `<table>` with actual values. Prefix with `npx` when 
 
 ```bash
 mysql-ddl-scout <ddl_folder> --exists <table> [table...]
+mysql-ddl-scout <ddl_folder> --fields <table> [table...]
 mysql-ddl-scout <ddl_folder> --fields_info <table>
 mysql-ddl-scout <ddl_folder> --fields_info <table>:<col1>,<col2>
 mysql-ddl-scout <ddl_folder> --keys_info <table>
@@ -44,6 +46,13 @@ mysql-ddl-scout <ddl_folder> --ast <table>
 - Accepts one or more table names (space-separated)
 - Always exits `0` on success
 - Returns JSON array: `{ "table", "exists", "path" }` (`path` is absolute when found, `null` otherwise)
+
+### `--fields`
+
+- Accepts one or more table names (space-separated)
+- Returns column names only — JSON array of `{ "name", "fields": [...] }`, names in DDL order
+- A missing or unparseable table becomes `{ "name", "error" }` instead of aborting; exit code `1` if any table failed, `0` otherwise
+- Use this instead of `--fields_info` whenever you just need the list of column names
 
 ### `--fields_info`
 

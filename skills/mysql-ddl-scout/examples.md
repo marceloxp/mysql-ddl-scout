@@ -16,6 +16,32 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 ]
 ```
 
+## Column names only, one or more tables (use this when you just need field names)
+
+```bash
+mysql-ddl-scout .resources/tables --fields customers customer_addresses
+```
+
+```json
+[
+  {"name":"customers","fields":["id","company_id","external_id","name","status","created_at"]},
+  {"name":"customer_addresses","fields":["customer_id","company_id","address_type","zipcode"]}
+]
+```
+
+A missing/unparseable table reports a per-table `error` and the command exits `1`:
+
+```bash
+mysql-ddl-scout .resources/tables --fields customers missing_table
+```
+
+```json
+[
+  {"name":"customers","fields":["id","company_id","external_id","name","status","created_at"]},
+  {"name":"missing_table","error":"File for table 'missing_table' not found."}
+]
+```
+
 ## All columns (DDL order)
 
 ```bash
