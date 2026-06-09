@@ -1,6 +1,6 @@
 {
   "name": "mysql-ddl-scout",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "CLI tool to inspect MySQL DDL files for Claude Code and scripts",
   "main": "index.js",
   "files": [
@@ -31,7 +31,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "mysql-ddl-scout": "./index.js"
+    "mysql-ddl-scout": "index.js"
   },
   "dependencies": {
     "commander": "^12.1.0",

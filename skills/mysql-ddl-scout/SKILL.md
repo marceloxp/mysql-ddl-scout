@@ -22,17 +22,21 @@ Identify `<ddl_folder>` from the project context — common locations include `d
 
 ## Recommended workflow
 
-1. **`--exists`** — confirm table files exist before deeper inspection
-2. **`--fields`** — when you only need the column names of one or more tables, use this. Do NOT call `--fields_info` and post-process it with `grep`/`tr`/`jq` just to extract names.
-3. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
-4. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
-5. **`--ast`** — parser AST only when debugging parser output or building custom tooling
+1. **`--list`** — list every table in the folder before doing anything else. Do NOT guess table names and probe them with `--exists`.
+2. **`--search`** — when you already know part of a name, filter the table list by substring instead of listing everything.
+3. **`--exists`** — confirm specific table files exist before deeper inspection
+4. **`--fields`** — when you only need the column names of one or more tables, use this. Do NOT call `--fields_info` and post-process it with `grep`/`tr`/`jq` just to extract names.
+5. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
+6. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
+7. **`--ast`** — parser AST only when debugging parser output or building custom tooling
 
 ## Commands
 
 Replace `<ddl_folder>` and `<table>` with actual values. Prefix with `npx` when the CLI is not installed globally.
 
 ```bash
+mysql-ddl-scout <ddl_folder> --list
+mysql-ddl-scout <ddl_folder> --search <pattern> [pattern...]
 mysql-ddl-scout <ddl_folder> --exists <table> [table...]
 mysql-ddl-scout <ddl_folder> --fields <table> [table...]
 mysql-ddl-scout <ddl_folder> --fields_info <table>
@@ -40,6 +44,20 @@ mysql-ddl-scout <ddl_folder> --fields_info <table>:<col1>,<col2>
 mysql-ddl-scout <ddl_folder> --keys_info <table>
 mysql-ddl-scout <ddl_folder> --ast <table>
 ```
+
+### `--list`
+
+- Takes no arguments
+- Returns a sorted JSON array of all table names in the folder (extensions stripped); non-DDL files and dotfiles are ignored
+- Always exits `0`
+- Use this to discover real table names instead of guessing and probing with `--exists`
+
+### `--search`
+
+- Takes one or more case-insensitive substrings; a table matches if its name contains any of them
+- Returns a sorted JSON array of matching table names (extensions stripped); non-DDL files and dotfiles are ignored
+- Always exits `0`; returns `[]` when nothing matches
+- Use this to narrow a large schema when you already know part of a table name
 
 ### `--exists`
 

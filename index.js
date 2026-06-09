@@ -13,8 +13,10 @@ const TABLE_FILE_EXTENSIONS = ['.sql', '.ddl', ''];
 program
   .name('mysql-ddl-scout')
   .description('Parse MySQL DDL files and output strict JSON to stdout')
-  .version('1.0.0')
+  .version('1.1.0')
   .argument('<folder>', 'Path to the folder containing DDL files')
+  .option('--list', 'List all table names found in the folder')
+  .option('--search <patterns...>', 'List table names matching one or more substrings')
   .option('--exists <tables...>', 'Check if one or more table DDL files exist')
   .option('--fields <tables...>', 'Return only the column names for one or more tables')
   .option(
@@ -28,6 +30,16 @@ program
 
     if (!fs.existsSync(targetFolder)) {
       fail(`Directory not found: ${targetFolder}`);
+    }
+
+    if (options.list) {
+      handleList(targetFolder);
+      return;
+    }
+
+    if (options.search?.length) {
+      handleSearch(targetFolder, options.search);
+      return;
     }
 
     if (options.exists?.length) {
@@ -55,7 +67,9 @@ program
       return;
     }
 
-    fail('No command specified. Use --exists, --fields, --fields_info, --keys_info, or --ast.');
+    fail(
+      'No command specified. Use --list, --search, --exists, --fields, --fields_info, --keys_info, or --ast.'
+    );
   });
 
 function fail(message) {
@@ -72,6 +86,26 @@ function resolveTableFile(folder, table) {
     }
   }
   return { exists: false, filePath: null };
+}
+
+function listTableFiles(folder) {
+  const entries = fs.readdirSync(folder, { withFileTypes: true });
+  const names = new Set();
+
+  for (const entry of entries) {
+    if (!entry.isFile() || entry.name.startsWith('.')) {
+      continue;
+    }
+
+    const extension = path.extname(entry.name);
+    if (extension === '.sql' || extension === '.ddl') {
+      names.add(entry.name.slice(0, -extension.length));
+    } else if (extension === '') {
+      names.add(entry.name);
+    }
+  }
+
+  return [...names].sort();
 }
 
 function tryLoadAndParseDDL(folder, table) {
@@ -285,6 +319,22 @@ function extractForeignKeyActions(referenceDefinition) {
     }
   }
   return actions;
+}
+
+function handleList(folder) {
+  console.log(JSON.stringify(listTableFiles(folder)));
+  process.exit(0);
+}
+
+function handleSearch(folder, patterns) {
+  const needles = patterns.map((pattern) => pattern.toLowerCase());
+  const matches = listTableFiles(folder).filter((name) => {
+    const lowered = name.toLowerCase();
+    return needles.some((needle) => lowered.includes(needle));
+  });
+
+  console.log(JSON.stringify(matches));
+  process.exit(0);
 }
 
 function handleExists(folder, tables) {

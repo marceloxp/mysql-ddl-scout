@@ -13,6 +13,7 @@ Built specifically for developers, automation scripts, and LLM Agents (such as *
 ## Features
 
 - **100% Pure JSON Output**: No text clutter, banners, or emojis in `stdout`. Perfectly parseable for backend scripts and AI agents.
+- **Table Discovery**: List every table in a folder or search by substring — no need to guess table names.
 - **Table Existence Checking**: Scan one or more tables and get absolute file paths when found.
 - **Quick Column Listing**: Get just the column names for one or more tables in a single compact call — no metadata noise.
 - **Granular Field Inspection**: Extract column data types, lengths, ENUM/SET values, nullability, and defaults.
@@ -60,7 +61,23 @@ Optional flags (your choice):
 
 The skill teaches agents how to call the CLI; you still need the CLI itself (`npm install -g mysql-ddl-scout` or `npx mysql-ddl-scout`). Discover more skills at [skills.sh](https://skills.sh).
 
-### 1. Locate Table Schema Files (`--exists`)
+### 1. Discover Tables (`--list` / `--search`)
+
+Find out which tables exist without guessing names. `--list` returns every table in the folder; `--search` filters by one or more case-insensitive substrings (matching any). Both return a sorted JSON array of table names (extensions stripped) and exit with code `0`. Non-DDL files (e.g. `README.md`, dotfiles) are ignored.
+
+```bash
+mysql-ddl-scout .resources/tables --list
+mysql-ddl-scout .resources/tables --search customer
+mysql-ddl-scout .resources/tables --search customer address
+```
+
+**Stdout Response (JSON):**
+
+```json
+["customer_addresses","customers"]
+```
+
+### 2. Locate Table Schema Files (`--exists`)
 
 Verifies whether one or more table DDL files exist in the target folder. Accepts multiple table names separated by spaces. Always exits with code `0`; each result includes `exists` and `path` (`null` when not found).
 
@@ -78,7 +95,7 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 ]
 ```
 
-### 2. List Column Names (`--fields`)
+### 3. List Column Names (`--fields`)
 
 Returns just the column names for one or more tables — no metadata, minimal output. Ideal when an agent only needs to know which fields a table has. Accepts multiple table names separated by spaces; each result is `{"name":...,"fields":[...]}` with names in DDL order. A table that is missing or unparseable becomes `{"name":...,"error":...}` instead of aborting the whole call, and the command exits with code `1`.
 
@@ -98,7 +115,7 @@ mysql-ddl-scout .resources/tables --fields customers customer_addresses missing_
 
 When all tables resolve, the command exits with code `0`.
 
-### 3. Inspect Column Metadata (`--fields_info`)
+### 4. Inspect Column Metadata (`--fields_info`)
 
 Extracts attributes for specified columns of a single table, or all columns when only the table name is given. Format: `table_name` or `table_name:column1,column2,column3`. Results follow DDL order when returning all fields, or the requested field order when specific columns are listed. Unknown fields are included as `{"field":"...","exists":false}` and the command exits with code `1`.
 
@@ -132,7 +149,7 @@ mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
 ]
 ```
 
-### 4. Extract Relational Key Footprints (`--keys_info`)
+### 5. Extract Relational Key Footprints (`--keys_info`)
 
 Maps primary keys, indexes, unique constraints, and foreign keys for a single table. Unique indexes include `"unique": true`. Prefix indexes preserve the length suffix (e.g. `"name(20)"`).
 
@@ -188,7 +205,7 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 }
 ```
 
-### 5. Parser AST (`--ast`)
+### 6. Parser AST (`--ast`)
 
 Returns the `node-sql-parser` AST for a single table DDL. Useful for debugging parser output or building custom tooling on top of the AST.
 

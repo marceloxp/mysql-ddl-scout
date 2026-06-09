@@ -2,6 +2,24 @@
 
 Illustrative commands using the sample DDL in this repository (`.resources/tables`). In other projects, replace the folder path with the project's `<ddl_folder>`.
 
+## Discover tables (list / search)
+
+```bash
+mysql-ddl-scout .resources/tables --list
+```
+
+```json
+["customer_addresses","customers"]
+```
+
+```bash
+mysql-ddl-scout .resources/tables --search customer
+```
+
+```json
+["customer_addresses","customers"]
+```
+
 ## Check table existence
 
 ```bash
