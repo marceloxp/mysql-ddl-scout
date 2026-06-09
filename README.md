@@ -18,6 +18,7 @@ Built specifically for developers, automation scripts, and LLM Agents (such as *
 - **Quick Column Listing**: Get just the column names for one or more tables in a single compact call — no metadata noise.
 - **Granular Field Inspection**: Extract column data types, lengths, ENUM/SET values, nullability, and defaults.
 - **Relational Map Engine**: Primary keys, indexes (including UNIQUE), prefix indexes, and foreign keys with composite column mapping.
+- **Bidirectional Relationships**: For any table, get the foreign keys it declares and the ones pointing back to it — in a single call, no inference.
 - **AST Dump**: Output the `node-sql-parser` AST for debugging and advanced inspection.
 
 ## Installation
@@ -205,7 +206,34 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 }
 ```
 
-### 6. Parser AST (`--ast`)
+### 6. Map Table Relationships (`--relations`)
+
+Returns the declared foreign keys of a single table in **both directions**, using only relationships present in the DDL (no inference):
+
+- `references` — foreign keys this table declares (outgoing), same shape as `--keys_info`.
+- `referenced_by` — foreign keys that **other tables** declare pointing to this table (incoming), found by scanning every DDL in the folder. Each entry names the dependent `table`, its local `columns`, and the `referenced_columns` on the target.
+
+This answers "what depends on this table?" in a single call instead of reading every file yourself. `referenced_by` is `[]` when nothing points to the table. Exits `1` if the table file is not found.
+
+```bash
+mysql-ddl-scout .resources/tables --relations customers
+```
+
+**Stdout Response (JSON):**
+
+```json
+{
+  "name":"customers",
+  "references":[
+    {"name":"customers_company_id_foreign","local_columns":["company_id"],"referenced_table":"companies","referenced_columns":["id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ],
+  "referenced_by":[
+    {"table":"customer_addresses","name":"fk_customer_addresses_customer","columns":["customer_id","company_id"],"referenced_columns":["id","company_id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ]
+}
+```
+
+### 7. Parser AST (`--ast`)
 
 Returns the `node-sql-parser` AST for a single table DDL. Useful for debugging parser output or building custom tooling on top of the AST.
 

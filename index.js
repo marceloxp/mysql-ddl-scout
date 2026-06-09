@@ -24,6 +24,10 @@ program
     'Return field metadata (format: table or table:field1,field2)'
   )
   .option('--keys_info <table>', 'Return primary keys, indexes, and foreign keys for a table')
+  .option(
+    '--relations <table>',
+    'Return declared foreign keys of a table in both directions (references and referenced_by)'
+  )
   .option('--ast <table>', 'Return the node-sql-parser AST for a table DDL')
   .action((folder, options) => {
     const targetFolder = path.resolve(folder);
@@ -62,13 +66,18 @@ program
       return;
     }
 
+    if (options.relations) {
+      handleRelations(targetFolder, options.relations);
+      return;
+    }
+
     if (options.ast) {
       handleAst(targetFolder, options.ast);
       return;
     }
 
     fail(
-      'No command specified. Use --list, --search, --exists, --fields, --fields_info, --keys_info, or --ast.'
+      'No command specified. Use --list, --search, --exists, --fields, --fields_info, --keys_info, --relations, or --ast.'
     );
   });
 
@@ -430,6 +439,22 @@ function handleFieldsInfo(folder, tableAndFields) {
   process.exit(hasMissing ? 1 : 0);
 }
 
+function extractForeignKeys(definitions) {
+  const foreignKeys = [];
+  for (const def of definitions) {
+    if (def.constraint_type === 'FOREIGN KEY') {
+      foreignKeys.push({
+        name: stripBackticks(def.constraint),
+        local_columns: extractColumnNames(def.definition),
+        referenced_table: extractReferencedTable(def.reference_definition),
+        referenced_columns: extractColumnNames(def.reference_definition?.definition),
+        ...extractForeignKeyActions(def.reference_definition),
+      });
+    }
+  }
+  return foreignKeys;
+}
+
 function handleKeysInfo(folder, table) {
   const ast = loadAndParseDDL(folder, table);
   const keys = { primary_keys: [], indexes: [], foreign_keys: [] };
@@ -454,19 +479,50 @@ function handleKeysInfo(folder, table) {
         unique: true,
       });
     }
+  }
 
-    if (def.constraint_type === 'FOREIGN KEY') {
-      keys.foreign_keys.push({
-        name: stripBackticks(def.constraint),
-        local_columns: extractColumnNames(def.definition),
-        referenced_table: extractReferencedTable(def.reference_definition),
-        referenced_columns: extractColumnNames(def.reference_definition?.definition),
-        ...extractForeignKeyActions(def.reference_definition),
-      });
+  keys.foreign_keys = extractForeignKeys(definitions);
+
+  console.log(JSON.stringify(keys));
+  process.exit(0);
+}
+
+function handleRelations(folder, table) {
+  const ast = loadAndParseDDL(folder, table);
+  const references = extractForeignKeys(ast.create_definitions || []);
+
+  const target = table.toLowerCase();
+  const referencedBy = [];
+
+  for (const other of listTableFiles(folder)) {
+    const { node, error } = tryLoadAndParseDDL(folder, other);
+    if (error) {
+      continue;
+    }
+
+    for (const fk of extractForeignKeys(node.create_definitions || [])) {
+      if (fk.referenced_table.toLowerCase() !== target) {
+        continue;
+      }
+
+      // re-label from the dependent's perspective; omit referenced_table (it is the target itself)
+      const entry = {
+        table: other,
+        name: fk.name,
+        columns: fk.local_columns,
+        referenced_columns: fk.referenced_columns,
+      };
+      if (fk.on_delete) {
+        entry.on_delete = fk.on_delete;
+      }
+      if (fk.on_update) {
+        entry.on_update = fk.on_update;
+      }
+      referencedBy.push(entry);
     }
   }
 
-  console.log(JSON.stringify(keys));
+  console.log(JSON.stringify({ name: table, references, referenced_by: referencedBy }));
   process.exit(0);
 }
 

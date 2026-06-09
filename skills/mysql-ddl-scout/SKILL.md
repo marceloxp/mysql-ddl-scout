@@ -27,8 +27,9 @@ Identify `<ddl_folder>` from the project context — common locations include `d
 3. **`--exists`** — confirm specific table files exist before deeper inspection
 4. **`--fields`** — when you only need the column names of one or more tables, use this. Do NOT call `--fields_info` and post-process it with `grep`/`tr`/`jq` just to extract names.
 5. **`--fields_info`** — column types, nullability, defaults, ENUM/SET values
-6. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys
-7. **`--ast`** — parser AST only when debugging parser output or building custom tooling
+6. **`--keys_info`** — primary keys, indexes, unique constraints, foreign keys of one table
+7. **`--relations`** — declared foreign keys of one table in both directions; use to find what depends on a table (`referenced_by`) without reading every file yourself
+8. **`--ast`** — parser AST only when debugging parser output or building custom tooling
 
 ## Commands
 
@@ -42,6 +43,7 @@ mysql-ddl-scout <ddl_folder> --fields <table> [table...]
 mysql-ddl-scout <ddl_folder> --fields_info <table>
 mysql-ddl-scout <ddl_folder> --fields_info <table>:<col1>,<col2>
 mysql-ddl-scout <ddl_folder> --keys_info <table>
+mysql-ddl-scout <ddl_folder> --relations <table>
 mysql-ddl-scout <ddl_folder> --ast <table>
 ```
 
@@ -86,6 +88,14 @@ mysql-ddl-scout <ddl_folder> --ast <table>
 - Unique indexes include `"unique": true`
 - Foreign keys include `on_delete` and `on_update` when defined
 - Prefix indexes preserve length suffix (e.g. `"name(20)"`)
+
+### `--relations`
+
+- Single table only
+- Returns `{ "name", "references", "referenced_by" }` using only foreign keys declared in the DDL — no inference
+- `references` are the table's own foreign keys (outgoing), same shape as `--keys_info`
+- `referenced_by` are foreign keys other tables declare pointing to this table (incoming), found by scanning every DDL in the folder; each entry has `{ "table", "name", "columns", "referenced_columns" }` plus `on_delete`/`on_update` when defined
+- Prefer this over reading every file to answer "what depends on this table?"; `referenced_by` is `[]` when nothing points to it. Exits `1` if the table file is not found
 
 ### `--ast`
 

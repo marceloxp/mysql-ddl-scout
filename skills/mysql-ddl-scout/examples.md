@@ -137,6 +137,24 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 }
 ```
 
+## Relationships in both directions
+
+```bash
+mysql-ddl-scout .resources/tables --relations customers
+```
+
+```json
+{
+  "name":"customers",
+  "references":[
+    {"name":"customers_company_id_foreign","local_columns":["company_id"],"referenced_table":"companies","referenced_columns":["id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ],
+  "referenced_by":[
+    {"table":"customer_addresses","name":"fk_customer_addresses_customer","columns":["customer_id","company_id"],"referenced_columns":["id","company_id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ]
+}
+```
+
 ## Operational error (stderr, exit code 1)
 
 ```bash
