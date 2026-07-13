@@ -43,24 +43,63 @@ You can also run the latest published version directly with `npx`:
 npx mysql-ddl-scout <folder_path> [options]
 ```
 
-## Agent Skill
+## MCP Server
 
-Install the agent skill so coding agents (Cursor, Claude Code, Codex, and others) know when and how to invoke this CLI. The skill is distributed via the [open agent skills ecosystem](https://agentskills.io) using the [skills CLI](https://www.npmjs.com/package/skills):
+For AI agents in **Cursor** and **Claude Desktop**, use the bundled MCP server instead of shell commands. It exposes the same operations as structured tools with a required `ddl_folder` parameter on every call.
 
-```bash
-npx skills add marceloxp/mysql-ddl-scout
+### Cursor configuration
+
+Add to your MCP config (`.cursor/mcp.json` or global settings):
+
+```json
+{
+  "mcpServers": {
+    "mysql-ddl-scout": {
+      "command": "npx",
+      "args": ["-y", "mysql-ddl-scout-mcp"]
+    }
+  }
+}
 ```
 
-The CLI auto-detects installed agents and prompts you to choose installation scope (project or global) and target agents interactively.
+For local development, point to the repo:
 
-Optional flags (your choice):
+```json
+{
+  "mcpServers": {
+    "mysql-ddl-scout": {
+      "command": "node",
+      "args": ["/absolute/path/to/mysql-ddl-scout/mcp-server.js"]
+    }
+  }
+}
+```
 
-- `--skill mysql-ddl-scout` — install only this skill (useful if the repo contains multiple skills)
-- `-g`, `--global` — install to your user directory instead of the current project
-- `-a <agent>` — advanced override to target a specific agent; omit for multi-agent compatibility
-- `--list` — preview available skills without installing
+### Available tools
 
-The skill teaches agents how to call the CLI; you still need the CLI itself (`npm install -g mysql-ddl-scout` or `npx mysql-ddl-scout`). Discover more skills at [skills.sh](https://skills.sh).
+| MCP tool | CLI equivalent |
+|----------|----------------|
+| `ddl_list_tables` | `--list` |
+| `ddl_search_tables` | `--search` |
+| `ddl_table_exists` | `--exists` |
+| `ddl_get_fields` | `--fields` |
+| `ddl_get_fields_info` | `--fields_info` |
+| `ddl_get_keys_info` | `--keys_info` |
+| `ddl_get_relations` | `--relations` |
+| `ddl_get_ast` | `--ast` |
+
+Every tool returns minified JSON in the text content. Operational errors return `{"error":"message"}` with `isError: true`.
+
+### Recommended workflow for agents
+
+1. `ddl_list_tables` — discover table names before guessing
+2. `ddl_search_tables` — filter by substring when the schema is large
+3. `ddl_table_exists` — confirm specific tables
+4. `ddl_get_fields` — column names only (prefer over `ddl_get_fields_info` when types are not needed)
+5. `ddl_get_fields_info` — column types, nullability, defaults
+6. `ddl_get_keys_info` — indexes and foreign keys
+7. `ddl_get_relations` — bidirectional FK map
+8. `ddl_get_ast` — parser AST for debugging only
 
 ### 1. Discover Tables (`--list` / `--search`)
 

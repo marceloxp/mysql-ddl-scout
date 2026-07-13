@@ -5,7 +5,8 @@
   "main": "index.js",
   "files": [
     "index.js",
-    "skills/",
+    "lib/",
+    "mcp-server.js",
     "README.md",
     "LICENSE"
   ],
@@ -13,8 +14,8 @@
     "test": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write index.js \"tests/**/*.js\"",
-    "format:check": "prettier --check index.js \"tests/**/*.js\""
+    "format": "prettier --write index.js lib/**/*.js mcp-server.js \"tests/**/*.js\"",
+    "format:check": "prettier --check index.js lib/**/*.js mcp-server.js \"tests/**/*.js\""
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,7 @@
   "keywords": [
     "mysql",
     "ddl",
-    "agent-skills",
+    "mcp",
     "cursor",
     "claude-code"
   ],
@@ -31,11 +32,14 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "mysql-ddl-scout": "index.js"
+    "mysql-ddl-scout": "index.js",
+    "mysql-ddl-scout-mcp": "mcp-server.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^12.1.0",
-    "node-sql-parser": "^4.18.0"
+    "node-sql-parser": "^4.18.0",
+    "zod": "^3.25.76"
   },
   "bugs": {
     "url": "https://github.com/marceloxp/mysql-ddl-scout/issues"
