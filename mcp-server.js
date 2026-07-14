@@ -8,7 +8,7 @@ import * as core from './lib/core.js';
 
 const server = new McpServer({
   name: 'mysql-ddl-scout',
-  version: '1.1.0',
+  version: '1.2.0',
 });
 
 function jsonResult(data, isError = false) {

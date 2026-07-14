@@ -29,10 +29,11 @@ Install globally with npm:
 npm install -g mysql-ddl-scout
 ```
 
-After installation, the CLI will be available system-wide:
+After installation, both entry points are available system-wide:
 
 ```bash
 mysql-ddl-scout <folder_path> [options]
+mysql-ddl-scout-mcp
 ```
 
 ## Usage Without Installation
@@ -41,7 +42,10 @@ You can also run the latest published version directly with `npx`:
 
 ```bash
 npx mysql-ddl-scout <folder_path> [options]
+npx -y -p mysql-ddl-scout mysql-ddl-scout-mcp
 ```
+
+`mysql-ddl-scout-mcp` is a binary inside the `mysql-ddl-scout` package, not a separate npm package. Use `-p mysql-ddl-scout` to install the package, then invoke the MCP binary by name.
 
 ## MCP Server
 
@@ -56,7 +60,7 @@ Add to your MCP config (`.cursor/mcp.json` or global settings):
   "mcpServers": {
     "mysql-ddl-scout": {
       "command": "npx",
-      "args": ["-y", "mysql-ddl-scout-mcp"]
+      "args": ["-y", "-p", "mysql-ddl-scout", "mysql-ddl-scout-mcp"]
     }
   }
 }
@@ -70,6 +74,19 @@ For local development, point to the repo:
     "mysql-ddl-scout": {
       "command": "node",
       "args": ["/absolute/path/to/mysql-ddl-scout/mcp-server.js"]
+    }
+  }
+}
+```
+
+If installed globally (`npm install -g mysql-ddl-scout`), you can use the binary directly:
+
+```json
+{
+  "mcpServers": {
+    "mysql-ddl-scout": {
+      "command": "mysql-ddl-scout-mcp",
+      "args": []
     }
   }
 }

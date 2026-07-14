@@ -1,6 +1,6 @@
 {
   "name": "mysql-ddl-scout",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "CLI tool to inspect MySQL DDL files for Claude Code and scripts",
   "main": "index.js",
   "files": [

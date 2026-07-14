@@ -7,7 +7,7 @@ import * as core from './lib/core.js';
 program
   .name('mysql-ddl-scout')
   .description('Parse MySQL DDL files and output strict JSON to stdout')
-  .version('1.1.0')
+  .version('1.2.0')
   .argument('<folder>', 'Path to the folder containing DDL files')
   .option('--list', 'List all table names found in the folder')
   .option('--search <patterns...>', 'List table names matching one or more substrings')
