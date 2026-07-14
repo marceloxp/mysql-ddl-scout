@@ -42,81 +42,21 @@ You can also run the latest published version directly with `npx`:
 
 ```bash
 npx mysql-ddl-scout <folder_path> [options]
-npx -y -p mysql-ddl-scout mysql-ddl-scout-mcp
 ```
-
-`mysql-ddl-scout-mcp` is a binary inside the `mysql-ddl-scout` package, not a separate npm package. Use `-p mysql-ddl-scout` to install the package, then invoke the MCP binary by name.
 
 ## MCP Server
 
-For AI agents in **Cursor** and **Claude Desktop**, use the bundled MCP server instead of shell commands. It exposes the same operations as structured tools with a required `ddl_folder` parameter on every call.
+For AI agents (**Cursor**, **Claude Desktop**, **VS Code**), use the bundled MCP server instead of shell commands. It exposes the same operations as structured tools with a required `ddl_folder` parameter on every call.
 
-### Cursor configuration
-
-Add to your MCP config (`.cursor/mcp.json` or global settings):
-
-```json
-{
-  "mcpServers": {
-    "mysql-ddl-scout": {
-      "command": "npx",
-      "args": ["-y", "-p", "mysql-ddl-scout", "mysql-ddl-scout-mcp"]
-    }
-  }
-}
+```bash
+npx -y -p mysql-ddl-scout mysql-ddl-scout-mcp
 ```
 
-For local development, point to the repo:
+> **Note:** Running `mysql-ddl-scout-mcp` directly in a terminal shows no output and appears frozen. That is normal — stdio MCP servers wait for a client on stdin. Use the [MCP Inspector](docs/mcp.md#testing-with-mcp-inspector) or configure your IDE.
 
-```json
-{
-  "mcpServers": {
-    "mysql-ddl-scout": {
-      "command": "node",
-      "args": ["/absolute/path/to/mysql-ddl-scout/mcp-server.js"]
-    }
-  }
-}
-```
+`mysql-ddl-scout-mcp` is a binary inside the `mysql-ddl-scout` package, not a separate npm package.
 
-If installed globally (`npm install -g mysql-ddl-scout`), you can use the binary directly:
-
-```json
-{
-  "mcpServers": {
-    "mysql-ddl-scout": {
-      "command": "mysql-ddl-scout-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-### Available tools
-
-| MCP tool | CLI equivalent |
-|----------|----------------|
-| `ddl_list_tables` | `--list` |
-| `ddl_search_tables` | `--search` |
-| `ddl_table_exists` | `--exists` |
-| `ddl_get_fields` | `--fields` |
-| `ddl_get_fields_info` | `--fields_info` |
-| `ddl_get_keys_info` | `--keys_info` |
-| `ddl_get_relations` | `--relations` |
-| `ddl_get_ast` | `--ast` |
-
-Every tool returns minified JSON in the text content. Operational errors return `{"error":"message"}` with `isError: true`.
-
-### Recommended workflow for agents
-
-1. `ddl_list_tables` — discover table names before guessing
-2. `ddl_search_tables` — filter by substring when the schema is large
-3. `ddl_table_exists` — confirm specific tables
-4. `ddl_get_fields` — column names only (prefer over `ddl_get_fields_info` when types are not needed)
-5. `ddl_get_fields_info` — column types, nullability, defaults
-6. `ddl_get_keys_info` — indexes and foreign keys
-7. `ddl_get_relations` — bidirectional FK map
-8. `ddl_get_ast` — parser AST for debugging only
+**Full documentation:** [docs/mcp.md](docs/mcp.md) — installation, client configuration, tools reference, testing, and troubleshooting.
 
 ### 1. Discover Tables (`--list` / `--search`)
 
