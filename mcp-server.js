@@ -8,7 +8,7 @@ import * as core from './lib/core.js';
 
 const server = new McpServer({
   name: 'mysql-ddl-scout',
-  version: '1.2.0',
+  version: '1.3.0',
 });
 
 function jsonResult(data, isError = false) {
@@ -142,6 +142,38 @@ server.tool(
   async ({ ddl_folder, table }) => {
     try {
       return jsonResult(core.getRelations(resolveFolder(ddl_folder), table));
+    } catch (error) {
+      return handleError(error);
+    }
+  }
+);
+
+server.tool(
+  'ddl_get_references',
+  'Return outgoing foreign keys declared by a single table (same shape as references in ddl_get_relations).',
+  {
+    ddl_folder: z.string().describe('Path to the folder containing DDL files'),
+    table: z.string().describe('Table name'),
+  },
+  async ({ ddl_folder, table }) => {
+    try {
+      return jsonResult(core.getReferences(resolveFolder(ddl_folder), table));
+    } catch (error) {
+      return handleError(error);
+    }
+  }
+);
+
+server.tool(
+  'ddl_get_referenced_by',
+  'Return incoming foreign keys from other tables that point to a single table (same shape as referenced_by in ddl_get_relations).',
+  {
+    ddl_folder: z.string().describe('Path to the folder containing DDL files'),
+    table: z.string().describe('Table name'),
+  },
+  async ({ ddl_folder, table }) => {
+    try {
+      return jsonResult(core.getReferencedBy(resolveFolder(ddl_folder), table));
     } catch (error) {
       return handleError(error);
     }

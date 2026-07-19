@@ -202,20 +202,45 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 }
 ```
 
-### 6. Map Table Relationships (`--relations`)
+### 6. Map Table Relationships (`--relations`, `--references`, `--referenced_by`)
 
-Returns the declared foreign keys of a single table in **both directions**, using only relationships present in the DDL (no inference):
+Returns declared foreign keys for a single table using only relationships present in the DDL (no inference).
 
-- `references` — foreign keys this table declares (outgoing), same shape as `--keys_info`.
-- `referenced_by` — foreign keys that **other tables** declare pointing to this table (incoming), found by scanning every DDL in the folder. Each entry names the dependent `table`, its local `columns`, and the `referenced_columns` on the target.
+- `--references` — outgoing foreign keys this table declares (same shape as `foreign_keys` in `--keys_info`). Fast: reads only the target table file.
+- `--referenced_by` — incoming foreign keys that **other tables** declare pointing to this table, found by scanning every DDL in the folder. Each entry names the dependent `table`, its local `columns`, and the `referenced_columns` on the target.
+- `--relations` — both directions in one response (`references` + `referenced_by`). Prefer the split commands when the combined payload is too large (e.g. hub tables like `users`).
 
-This answers "what depends on this table?" in a single call instead of reading every file yourself. `referenced_by` is `[]` when nothing points to the table. Exits `1` if the table file is not found.
+`referenced_by` is `[]` when nothing points to the table. Exits `1` if the table file is not found.
 
 ```bash
+mysql-ddl-scout .resources/tables --references customers
+mysql-ddl-scout .resources/tables --referenced_by customers
 mysql-ddl-scout .resources/tables --relations customers
 ```
 
-**Stdout Response (JSON):**
+**Stdout Response (`--references`):**
+
+```json
+{
+  "name":"customers",
+  "references":[
+    {"name":"customers_company_id_foreign","local_columns":["company_id"],"referenced_table":"companies","referenced_columns":["id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ]
+}
+```
+
+**Stdout Response (`--referenced_by`):**
+
+```json
+{
+  "name":"customers",
+  "referenced_by":[
+    {"table":"customer_addresses","name":"fk_customer_addresses_customer","columns":["customer_id","company_id"],"referenced_columns":["id","company_id"],"on_delete":"CASCADE","on_update":"CASCADE"}
+  ]
+}
+```
+
+**Stdout Response (`--relations`):**
 
 ```json
 {

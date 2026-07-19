@@ -133,6 +133,8 @@ Every tool takes `ddl_folder` (absolute or relative path to the DDL directory). 
 | `ddl_get_fields_info` | `--fields_info` | Column types, nullability, defaults, ENUM/SET values, generated columns. |
 | `ddl_get_keys_info` | `--keys_info` | Primary keys, indexes, unique constraints, foreign keys. |
 | `ddl_get_relations` | `--relations` | Foreign keys in both directions (`references` + `referenced_by`). |
+| `ddl_get_references` | `--references` | Outgoing foreign keys only (reads one table file). |
+| `ddl_get_referenced_by` | `--referenced_by` | Incoming foreign keys only (scans the folder). |
 | `ddl_get_ast` | `--ast` | Parser AST. For debugging or custom tooling only. |
 
 ### Parameters
@@ -146,6 +148,8 @@ Every tool takes `ddl_folder` (absolute or relative path to the DDL directory). 
 | `ddl_get_fields_info` | `ddl_folder`, `table`, `fields` (optional string array) |
 | `ddl_get_keys_info` | `ddl_folder`, `table` |
 | `ddl_get_relations` | `ddl_folder`, `table` |
+| `ddl_get_references` | `ddl_folder`, `table` |
+| `ddl_get_referenced_by` | `ddl_folder`, `table` |
 | `ddl_get_ast` | `ddl_folder`, `table` |
 
 ### Output contract
@@ -162,8 +166,9 @@ Every tool takes `ddl_folder` (absolute or relative path to the DDL directory). 
 4. `ddl_get_fields` — column names only
 5. `ddl_get_fields_info` — types and metadata
 6. `ddl_get_keys_info` — indexes and foreign keys
-7. `ddl_get_relations` — bidirectional FK map
-8. `ddl_get_ast` — parser debugging only
+7. `ddl_get_references` or `ddl_get_referenced_by` — one FK direction at a time (prefer over `ddl_get_relations` for hub tables)
+8. `ddl_get_relations` — bidirectional FK map when both directions are needed
+9. `ddl_get_ast` — parser debugging only
 
 ## Testing with MCP Inspector
 
@@ -211,7 +216,7 @@ Expected response text:
 | `404` on `npx mysql-ddl-scout-mcp` | Wrong package name | Use `npx -y -p mysql-ddl-scout mysql-ddl-scout-mcp` |
 | Tools not visible in Cursor | Server not configured or disabled | Check `.cursor/mcp.json`, reload, enable in Tools & MCP |
 | `Directory not found` | Wrong `ddl_folder` | Use an absolute path or verify the folder exists |
-| Old version without MCP bin | npm cache / old publish | Ensure `mysql-ddl-scout@1.2.0` or later: `npm view mysql-ddl-scout bin` |
+| Old version without MCP bin | npm cache / old publish | Ensure `mysql-ddl-scout@1.3.0` or later: `npm view mysql-ddl-scout bin` |
 
 ## Architecture
 
