@@ -29,34 +29,20 @@ Install globally with npm:
 npm install -g mysql-ddl-scout
 ```
 
-After installation, both entry points are available system-wide:
+After installation, both entry points are available on your `PATH`:
 
 ```bash
 mysql-ddl-scout <folder_path> [options]
 mysql-ddl-scout-mcp
 ```
 
-## Usage Without Installation
-
-You can also run the latest published version directly with `npx`:
-
-```bash
-npx mysql-ddl-scout <folder_path> [options]
-```
-
 ## MCP Server
 
-For AI agents (**Cursor**, **Claude Desktop**, **VS Code**), use the bundled MCP server instead of shell commands. It exposes the same operations as structured tools with a required `ddl_folder` parameter on every call.
+For AI agents, configure your MCP client to run `mysql-ddl-scout-mcp`. Install the package globally first (see [Installation](#installation)).
 
-```bash
-npx -y -p mysql-ddl-scout mysql-ddl-scout-mcp
-```
+Every tool requires a `ddl_folder` parameter pointing to the directory with your DDL files.
 
-> **Note:** Running `mysql-ddl-scout-mcp` directly in a terminal shows no output and appears frozen. That is normal — stdio MCP servers wait for a client on stdin. Use the [MCP Inspector](docs/mcp.md#testing-with-mcp-inspector) or configure your IDE.
-
-`mysql-ddl-scout-mcp` is a binary inside the `mysql-ddl-scout` package, not a separate npm package.
-
-**Full documentation:** [docs/mcp.md](docs/mcp.md) — installation, client configuration, tools reference, testing, and troubleshooting.
+**Configuration and tools reference:** [docs/mcp.md](docs/mcp.md)
 
 ### 1. Discover Tables (`--list` / `--search`)
 
