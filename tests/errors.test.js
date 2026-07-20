@@ -1,8 +1,17 @@
+import { readFileSync } from 'node:fs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli, runCliRaw, TABLES_DIR } from './helpers/run-cli.js';
+
+const packageVersion = JSON.parse(
+  readFileSync(
+    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'),
+    'utf8'
+  )
+).version;
 
 const tempDirs = [];
 
@@ -106,5 +115,23 @@ describe('excess CLI arguments', () => {
     expect(status).toBe(0);
     expect(json).toHaveLength(2);
     expect(json.map((entry) => entry.name)).toEqual(['customers', 'customer_addresses']);
+  });
+});
+
+describe('cli metadata', () => {
+  test('should print version and exit 0', () => {
+    const { status, stdout, stderr } = runCliRaw(['--version']);
+
+    expect(status).toBe(0);
+    expect(stdout).toBe(packageVersion);
+    expect(stderr).toBe('');
+  });
+
+  test('should print help and exit 0', () => {
+    const { status, stdout, stderr } = runCliRaw(['--help']);
+
+    expect(status).toBe(0);
+    expect(stdout).toContain('Usage: mysql-ddl-scout');
+    expect(stderr).toBe('');
   });
 });

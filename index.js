@@ -18,7 +18,7 @@ program
   .configureOutput({
     outputError: () => {},
   })
-  .exitOverride(({ code, message }) => {
+  .exitOverride(({ exitCode, code, message }) => {
     if (code === 'commander.excessArguments') {
       const active = SINGLE_TABLE_OPTIONS.find(([key]) => program.opts()[key]);
       fail(
@@ -27,11 +27,14 @@ program
           : message.replace(/^error:\s*/, '')
       );
     }
-    throw new Error(message);
+    if (exitCode === 0) {
+      process.exit(0);
+    }
+    fail(message.replace(/^error:\s*/, ''));
   })
   .name('mysql-ddl-scout')
   .description('Parse MySQL DDL files and output strict JSON to stdout')
-  .version('1.3.1')
+  .version('1.3.2')
   .argument('<folder>', 'Path to the folder containing DDL files')
   .option('--list', 'List all table names found in the folder')
   .option('--search <patterns...>', 'List table names matching one or more substrings')

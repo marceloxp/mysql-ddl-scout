@@ -7,21 +7,26 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..',
 export const TABLES_DIR = '.resources/tables';
 
 export function runCli(args, options = {}) {
+  const result = runCliRaw(args, options);
+
+  return {
+    ...result,
+    json: result.stdout ? JSON.parse(result.stdout) : null,
+    error: result.stderr ? JSON.parse(result.stderr) : null,
+  };
+}
+
+export function runCliRaw(args, options = {}) {
   const result = spawnSync('node', ['index.js', ...args], {
     cwd: rootDir,
     encoding: 'utf8',
     ...options,
   });
 
-  const stdout = result.stdout?.trim() ?? '';
-  const stderr = result.stderr?.trim() ?? '';
-
   return {
     status: result.status,
-    stdout,
-    stderr,
-    json: stdout ? JSON.parse(stdout) : null,
-    error: stderr ? JSON.parse(stderr) : null,
+    stdout: result.stdout?.trim() ?? '',
+    stderr: result.stderr?.trim() ?? '',
   };
 }
 
