@@ -4,10 +4,34 @@ import { program } from 'commander';
 import path from 'path';
 import * as core from './lib/core.js';
 
+const SINGLE_TABLE_OPTIONS = [
+  ['fields_info', '--fields_info'],
+  ['keys_info', '--keys_info'],
+  ['relations', '--relations'],
+  ['references', '--references'],
+  ['referenced_by', '--referenced_by'],
+  ['ast', '--ast'],
+];
+
 program
+  .allowExcessArguments(false)
+  .configureOutput({
+    outputError: () => {},
+  })
+  .exitOverride(({ code, message }) => {
+    if (code === 'commander.excessArguments') {
+      const active = SINGLE_TABLE_OPTIONS.find(([key]) => program.opts()[key]);
+      fail(
+        active
+          ? `${active[1]} accepts a single table name; remove extra arguments.`
+          : message.replace(/^error:\s*/, '')
+      );
+    }
+    throw new Error(message);
+  })
   .name('mysql-ddl-scout')
   .description('Parse MySQL DDL files and output strict JSON to stdout')
-  .version('1.3.0')
+  .version('1.3.1')
   .argument('<folder>', 'Path to the folder containing DDL files')
   .option('--list', 'List all table names found in the folder')
   .option('--search <patterns...>', 'List table names matching one or more substrings')

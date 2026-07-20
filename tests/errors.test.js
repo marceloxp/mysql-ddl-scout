@@ -74,3 +74,37 @@ describe('errors', () => {
     expect(error).toEqual({ error: "Failed to parse SQL syntax for 'empty': empty file." });
   });
 });
+
+describe('excess CLI arguments', () => {
+  test('should fail when --relations receives extra table arguments', () => {
+    const { status, error, stdout } = runCli([
+      TABLES_DIR,
+      '--relations',
+      'customers',
+      'customer_addresses',
+    ]);
+
+    expect(status).toBe(1);
+    expect(stdout).toBe('');
+    expect(error).toEqual({
+      error: '--relations accepts a single table name; remove extra arguments.',
+    });
+  });
+
+  test('should fail when --keys_info receives extra table arguments', () => {
+    const { status, error } = runCli([TABLES_DIR, '--keys_info', 'customers', 'companies']);
+
+    expect(status).toBe(1);
+    expect(error).toEqual({
+      error: '--keys_info accepts a single table name; remove extra arguments.',
+    });
+  });
+
+  test('should still accept multiple tables for --fields', () => {
+    const { status, json } = runCli([TABLES_DIR, '--fields', 'customers', 'customer_addresses']);
+
+    expect(status).toBe(0);
+    expect(json).toHaveLength(2);
+    expect(json.map((entry) => entry.name)).toEqual(['customers', 'customer_addresses']);
+  });
+});
