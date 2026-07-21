@@ -118,14 +118,17 @@ server.tool(
 
 server.tool(
   'ddl_get_keys_info',
-  'Return primary keys, indexes, unique constraints, and foreign keys for a single table.',
+  'Return primary keys, indexes, unique constraints, and foreign keys for one or more tables. One table returns a flat object; two or more return an array.',
   {
     ddl_folder: z.string().describe('Path to the folder containing DDL files'),
-    table: z.string().describe('Table name'),
+    tables: z
+      .array(z.string())
+      .describe('Table names; one returns a flat object, two or more return an array'),
   },
-  async ({ ddl_folder, table }) => {
+  async ({ ddl_folder, tables }) => {
     try {
-      return jsonResult(core.getKeysInfo(resolveFolder(ddl_folder), table));
+      const { data, exitCode } = core.resolveKeysInfo(resolveFolder(ddl_folder), tables);
+      return jsonResult(data, exitCode === 1);
     } catch (error) {
       return handleError(error);
     }

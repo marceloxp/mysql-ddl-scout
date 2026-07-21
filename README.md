@@ -134,7 +134,7 @@ mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
 
 ### 5. Extract Relational Key Footprints (`--keys_info`)
 
-Maps primary keys, indexes, unique constraints, and foreign keys for a single table. Unique indexes include `"unique": true`. Prefix indexes preserve the length suffix (e.g. `"name(20)"`).
+Maps primary keys, indexes, unique constraints, and foreign keys for one or more tables. Unique indexes include `"unique": true`. Prefix indexes preserve the length suffix (e.g. `"name(20)"`). A single table returns a flat object; two or more return a JSON array (same per-table shape as the single-table response, plus `name`).
 
 ```bash
 mysql-ddl-scout .resources/tables --keys_info customers
@@ -186,6 +186,29 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
     }
   ]
 }
+```
+
+Multiple tables:
+
+```bash
+mysql-ddl-scout .resources/tables --keys_info customers customer_addresses
+```
+
+```json
+[
+  {
+    "name":"customers",
+    "primary_keys":["id"],
+    "indexes":[...],
+    "foreign_keys":[...]
+  },
+  {
+    "name":"customer_addresses",
+    "primary_keys":["customer_id","company_id","address_type"],
+    "indexes":[],
+    "foreign_keys":[...]
+  }
+]
 ```
 
 ### 6. Map Table Relationships (`--relations`, `--references`, `--referenced_by`)

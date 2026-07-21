@@ -62,3 +62,28 @@ describe('--keys_info', () => {
     ]);
   });
 });
+
+describe('--keys_info (multiple tables)', () => {
+  test('should return an array when multiple tables are requested', () => {
+    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customers', 'customer_addresses']);
+
+    expect(status).toBe(0);
+    expect(Array.isArray(json)).toBe(true);
+    expect(json).toHaveLength(2);
+    expect(json.map((entry) => entry.name)).toEqual(['customers', 'customer_addresses']);
+    expect(json[0].primary_keys).toEqual(['id']);
+    expect(json[1].primary_keys).toEqual(['customer_id', 'company_id', 'address_type']);
+  });
+
+  test('should report a per-table error and exit 1 when a table is missing', () => {
+    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customers', 'missing_table']);
+
+    expect(status).toBe(1);
+    expect(json).toHaveLength(2);
+    expect(json[0].name).toBe('customers');
+    expect(json[0].primary_keys).toEqual(['id']);
+    expect(json[1]).toMatchObject({ name: 'missing_table' });
+    expect(json[1].error).toMatch(/not found/);
+    expect(json[1]).not.toHaveProperty('primary_keys');
+  });
+});

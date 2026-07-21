@@ -100,15 +100,6 @@ describe('excess CLI arguments', () => {
     });
   });
 
-  test('should fail when --keys_info receives extra table arguments', () => {
-    const { status, error } = runCli([TABLES_DIR, '--keys_info', 'customers', 'companies']);
-
-    expect(status).toBe(1);
-    expect(error).toEqual({
-      error: '--keys_info accepts a single table name; remove extra arguments.',
-    });
-  });
-
   test('should still accept multiple tables for --fields', () => {
     const { status, json } = runCli([TABLES_DIR, '--fields', 'customers', 'customer_addresses']);
 

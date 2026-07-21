@@ -6,7 +6,6 @@ import * as core from './lib/core.js';
 
 const SINGLE_TABLE_OPTIONS = [
   ['fields_info', '--fields_info'],
-  ['keys_info', '--keys_info'],
   ['relations', '--relations'],
   ['references', '--references'],
   ['referenced_by', '--referenced_by'],
@@ -44,7 +43,10 @@ program
     '--fields_info <table_and_fields>',
     'Return field metadata (format: table or table:field1,field2)'
   )
-  .option('--keys_info <table>', 'Return primary keys, indexes, and foreign keys for a table')
+  .option(
+    '--keys_info <tables...>',
+    'Return primary keys, indexes, and foreign keys for one or more tables'
+  )
   .option(
     '--relations <table>',
     'Return declared foreign keys of a table in both directions (references and referenced_by)'
@@ -95,8 +97,9 @@ function runCommand(targetFolder, options) {
     return;
   }
 
-  if (options.keys_info) {
-    succeed(core.getKeysInfo(targetFolder, options.keys_info));
+  if (options.keys_info?.length) {
+    const { data, exitCode } = core.resolveKeysInfo(targetFolder, options.keys_info);
+    succeed(data, exitCode);
     return;
   }
 

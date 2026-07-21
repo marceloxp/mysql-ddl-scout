@@ -123,7 +123,7 @@ When working from a clone of this repository:
 | `ddl_table_exists` | `--exists` | `ddl_folder`, `tables` (string array) |
 | `ddl_get_fields` | `--fields` | `ddl_folder`, `tables` (string array) |
 | `ddl_get_fields_info` | `--fields_info` | `ddl_folder`, `table`, `fields` (optional string array) |
-| `ddl_get_keys_info` | `--keys_info` | `ddl_folder`, `table` |
+| `ddl_get_keys_info` | `--keys_info` | `ddl_folder`, `tables` (string array) |
 | `ddl_get_relations` | `--relations` | `ddl_folder`, `table` |
 | `ddl_get_references` | `--references` | `ddl_folder`, `table` |
 | `ddl_get_referenced_by` | `--referenced_by` | `ddl_folder`, `table` |
@@ -133,4 +133,4 @@ When working from a clone of this repository:
 
 - **Success:** minified JSON in tool text content.
 - **Operational error:** `{"error":"message"}` with `isError: true`.
-- **Partial failure** (`ddl_get_fields`, `ddl_get_fields_info`): returns available data with `isError: true` when some tables or columns are missing (same semantics as CLI exit code `1`).
+- **Partial failure** (`ddl_get_fields`, `ddl_get_fields_info`, `ddl_get_keys_info`): returns available data with `isError: true` when some tables or columns are missing (same semantics as CLI exit code `1`).
