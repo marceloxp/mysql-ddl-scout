@@ -59,6 +59,24 @@ server.tool(
 );
 
 server.tool(
+  'ddl_search_tables_regex',
+  'Search table names by one or more case-insensitive regular expressions. Use only when substring search is not enough; prefer ddl_search_tables for simple lookups.',
+  {
+    ddl_folder: z.string().describe('Path to the folder containing DDL files'),
+    patterns: z
+      .array(z.string())
+      .describe('Case-insensitive regular expressions; a table matches when any pattern matches'),
+  },
+  async ({ ddl_folder, patterns }) => {
+    try {
+      return jsonResult(core.searchTablesRegex(resolveFolder(ddl_folder), patterns));
+    } catch (error) {
+      return handleError(error);
+    }
+  }
+);
+
+server.tool(
   'ddl_table_exists',
   'Check whether one or more table DDL files exist and return their absolute paths when found.',
   {

@@ -120,6 +120,7 @@ When working from a clone of this repository:
 |------|----------------|------------|
 | `ddl_list_tables` | `--list` | `ddl_folder` |
 | `ddl_search_tables` | `--search` | `ddl_folder`, `patterns` (string array) |
+| `ddl_search_tables_regex` | `--search-regex` | `ddl_folder`, `patterns` (string array) |
 | `ddl_table_exists` | `--exists` | `ddl_folder`, `tables` (string array) |
 | `ddl_get_fields` | `--fields` | `ddl_folder`, `tables` (string array) |
 | `ddl_get_fields_info` | `--fields_info` | `ddl_folder`, `table`, `fields` (optional string array) |

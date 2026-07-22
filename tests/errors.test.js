@@ -34,7 +34,7 @@ describe('errors', () => {
     expect(status).toBe(1);
     expect(error).toEqual({
       error:
-        'No command specified. Use --list, --search, --exists, --fields, --fields_info, --keys_info, --relations, --references, --referenced_by, or --ast.',
+        'No command specified. Use --list, --search, --search-regex, --exists, --fields, --fields_info, --keys_info, --relations, --references, --referenced_by, or --ast.',
     });
   });
 

@@ -13,7 +13,7 @@ Built specifically for developers, automation scripts, and LLM Agents (such as *
 ## Features
 
 - **100% Pure JSON Output**: No text clutter, banners, or emojis in `stdout`. Perfectly parseable for backend scripts and AI agents.
-- **Table Discovery**: List every table in a folder or search by substring — no need to guess table names.
+- **Table Discovery**: List every table in a folder, search by substring, or search by regular expression — no need to guess table names.
 - **Table Existence Checking**: Scan one or more tables and get absolute file paths when found.
 - **Quick Column Listing**: Get just the column names for one or more tables in a single compact call — no metadata noise.
 - **Granular Field Inspection**: Extract column data types, lengths, ENUM/SET values, nullability, and defaults.
@@ -44,14 +44,16 @@ Every tool requires a `ddl_folder` parameter pointing to the directory with your
 
 **Configuration and tools reference:** [docs/mcp.md](docs/mcp.md)
 
-### 1. Discover Tables (`--list` / `--search`)
+### 1. Discover Tables (`--list` / `--search` / `--search-regex`)
 
-Find out which tables exist without guessing names. `--list` returns every table in the folder; `--search` filters by one or more case-insensitive substrings (matching any). Both return a sorted JSON array of table names (extensions stripped) and exit with code `0`. Non-DDL files (e.g. `README.md`, dotfiles) are ignored.
+Find out which tables exist without guessing names. `--list` returns every table in the folder; `--search` filters by one or more case-insensitive substrings (matching any); `--search-regex` filters by one or more case-insensitive regular expressions (matching any). All discovery commands return a sorted JSON array of table names (extensions stripped) and exit with code `0`. Non-DDL files (e.g. `README.md`, dotfiles) are ignored.
 
 ```bash
 mysql-ddl-scout .resources/tables --list
 mysql-ddl-scout .resources/tables --search customer
 mysql-ddl-scout .resources/tables --search customer address
+mysql-ddl-scout .resources/tables --search-regex "customer_.*address"
+mysql-ddl-scout .resources/tables --search-regex "customers|address"
 ```
 
 **Stdout Response (JSON):**

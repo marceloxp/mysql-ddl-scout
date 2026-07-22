@@ -37,6 +37,10 @@ program
   .argument('<folder>', 'Path to the folder containing DDL files')
   .option('--list', 'List all table names found in the folder')
   .option('--search <patterns...>', 'List table names matching one or more substrings')
+  .option(
+    '--search-regex <patterns...>',
+    'List table names matching one or more case-insensitive regular expressions'
+  )
   .option('--exists <tables...>', 'Check if one or more table DDL files exist')
   .option('--fields <tables...>', 'Return only the column names for one or more tables')
   .option(
@@ -68,14 +72,31 @@ program
     }
   });
 
+function runSearchCommand(targetFolder, options) {
+  if (options.search?.length && options.searchRegex?.length) {
+    fail('Use either --search or --search-regex, not both.');
+  }
+
+  if (options.search?.length) {
+    succeed(core.searchTables(targetFolder, options.search));
+    return true;
+  }
+
+  if (options.searchRegex?.length) {
+    succeed(core.searchTablesRegex(targetFolder, options.searchRegex));
+    return true;
+  }
+
+  return false;
+}
+
 function runCommand(targetFolder, options) {
   if (options.list) {
     succeed(core.listTables(targetFolder));
     return;
   }
 
-  if (options.search?.length) {
-    succeed(core.searchTables(targetFolder, options.search));
+  if (runSearchCommand(targetFolder, options)) {
     return;
   }
 
@@ -124,7 +145,7 @@ function runCommand(targetFolder, options) {
   }
 
   fail(
-    'No command specified. Use --list, --search, --exists, --fields, --fields_info, --keys_info, --relations, --references, --referenced_by, or --ast.'
+    'No command specified. Use --list, --search, --search-regex, --exists, --fields, --fields_info, --keys_info, --relations, --references, --referenced_by, or --ast.'
   );
 }
 
