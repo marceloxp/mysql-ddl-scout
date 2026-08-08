@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli } from './helpers/run-cli.js';
 
 describe('--keys_info', () => {
   test('should return primary keys, indexes, and foreign keys for customers', () => {
-    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customers']);
+    const { status, json } = runCli(['--keys_info', 'customers']);
 
     expect(status).toBe(0);
     expect(json.primary_keys).toEqual(['id']);
@@ -45,7 +45,7 @@ describe('--keys_info', () => {
   });
 
   test('should return composite keys for customer_addresses', () => {
-    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customer_addresses']);
+    const { status, json } = runCli(['--keys_info', 'customer_addresses']);
 
     expect(status).toBe(0);
     expect(json.primary_keys).toEqual(['customer_id', 'company_id', 'address_type']);
@@ -65,7 +65,7 @@ describe('--keys_info', () => {
 
 describe('--keys_info (multiple tables)', () => {
   test('should return an array when multiple tables are requested', () => {
-    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customers', 'customer_addresses']);
+    const { status, json } = runCli(['--keys_info', 'customers', 'customer_addresses']);
 
     expect(status).toBe(0);
     expect(Array.isArray(json)).toBe(true);
@@ -76,7 +76,7 @@ describe('--keys_info (multiple tables)', () => {
   });
 
   test('should report a per-table error and exit 1 when a table is missing', () => {
-    const { status, json } = runCli([TABLES_DIR, '--keys_info', 'customers', 'missing_table']);
+    const { status, json } = runCli(['--keys_info', 'customers', 'missing_table']);
 
     expect(status).toBe(1);
     expect(json).toHaveLength(2);

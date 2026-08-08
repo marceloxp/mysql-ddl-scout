@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli } from './helpers/run-cli.js';
 
 describe('--search', () => {
   test('should return tables matching a substring (case-insensitive)', () => {
-    const { status, json } = runCli([TABLES_DIR, '--search', 'CUSTOMER']);
+    const { status, json } = runCli(['--search', 'CUSTOMER']);
 
     expect(status).toBe(0);
     expect(json).toContain('customers');
@@ -12,7 +12,7 @@ describe('--search', () => {
   });
 
   test('should match any of multiple patterns', () => {
-    const { status, json } = runCli([TABLES_DIR, '--search', 'addresses', 'customers']);
+    const { status, json } = runCli(['--search', 'addresses', 'customers']);
 
     expect(status).toBe(0);
     expect(json).toContain('customers');
@@ -20,7 +20,7 @@ describe('--search', () => {
   });
 
   test('should return an empty array when nothing matches', () => {
-    const { status, json } = runCli([TABLES_DIR, '--search', 'zzz_no_match']);
+    const { status, json } = runCli(['--search', 'zzz_no_match']);
 
     expect(status).toBe(0);
     expect(json).toEqual([]);

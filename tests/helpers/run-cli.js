@@ -7,7 +7,11 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..',
 export const TABLES_DIR = '.resources/tables';
 
 export function runCli(args, options = {}) {
-  const result = runCliRaw(args, options);
+  return runCliWithFolder(TABLES_DIR, args, options);
+}
+
+export function runCliWithFolder(folder, args, options = {}) {
+  const result = runCliRaw(['--folder', folder, ...args], options);
 
   return {
     ...result,

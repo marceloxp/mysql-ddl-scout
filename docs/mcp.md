@@ -116,19 +116,21 @@ When working from a clone of this repository:
 
 ## Tools
 
-| Tool | CLI equivalent | Parameters |
-|------|----------------|------------|
-| `ddl_list_tables` | `--list` | `ddl_folder` |
-| `ddl_search_tables` | `--search` | `ddl_folder`, `patterns` (string array) |
-| `ddl_search_tables_regex` | `--search-regex` | `ddl_folder`, `patterns` (string array) |
-| `ddl_table_exists` | `--exists` | `ddl_folder`, `tables` (string array) |
-| `ddl_get_fields` | `--fields` | `ddl_folder`, `tables` (string array) |
-| `ddl_get_fields_info` | `--fields_info` | `ddl_folder`, `table`, `fields` (optional string array) |
-| `ddl_get_keys_info` | `--keys_info` | `ddl_folder`, `tables` (string array) |
-| `ddl_get_relations` | `--relations` | `ddl_folder`, `table` |
-| `ddl_get_references` | `--references` | `ddl_folder`, `table` |
-| `ddl_get_referenced_by` | `--referenced_by` | `ddl_folder`, `table` |
-| `ddl_get_ast` | `--ast` | `ddl_folder`, `table` |
+CLI commands require `--folder` / `-f` (equivalent to `ddl_folder` in MCP tools).
+
+| Tool                      | CLI equivalent    | Parameters                                              |
+| ------------------------- | ----------------- | ------------------------------------------------------- |
+| `ddl_list_tables`         | `--list`          | `ddl_folder`                                            |
+| `ddl_search_tables`       | `--search`        | `ddl_folder`, `patterns` (string array)                 |
+| `ddl_search_tables_regex` | `--search-regex`  | `ddl_folder`, `patterns` (string array)                 |
+| `ddl_table_exists`        | `--exists`        | `ddl_folder`, `tables` (string array)                   |
+| `ddl_get_fields`          | `--fields`        | `ddl_folder`, `tables` (string array)                   |
+| `ddl_get_fields_info`     | `--fields_info`   | `ddl_folder`, `table`, `fields` (optional string array) |
+| `ddl_get_keys_info`       | `--keys_info`     | `ddl_folder`, `tables` (string array)                   |
+| `ddl_get_relations`       | `--relations`     | `ddl_folder`, `table`                                   |
+| `ddl_get_references`      | `--references`    | `ddl_folder`, `table`                                   |
+| `ddl_get_referenced_by`   | `--referenced_by` | `ddl_folder`, `table`                                   |
+| `ddl_get_ast`             | `--ast`           | `ddl_folder`, `table`                                   |
 
 ### Response semantics
 

@@ -32,9 +32,30 @@ npm install -g mysql-ddl-scout
 After installation, both entry points are available on your `PATH`:
 
 ```bash
-mysql-ddl-scout <folder_path> [options]
+mysql-ddl-scout --folder <folder_path> [options]
 mysql-ddl-scout-mcp
 ```
+
+## Upgrading from 1.x
+
+Version 2.0.0 requires an explicit `--folder` (or `-f`) flag. Positional folder arguments are no longer accepted.
+
+```bash
+# Before (1.x)
+mysql-ddl-scout .resources/tables --fields customers
+
+# After (2.0.0)
+mysql-ddl-scout --folder .resources/tables --fields customers
+mysql-ddl-scout -f .resources/tables --fields customers
+```
+
+Option order no longer matters as long as `--folder` is provided:
+
+```bash
+mysql-ddl-scout --fields customers --folder .resources/tables
+```
+
+The MCP server is unchanged (`ddl_folder` was already a named parameter).
 
 ## MCP Server
 
@@ -49,11 +70,11 @@ Every tool requires a `ddl_folder` parameter pointing to the directory with your
 Find out which tables exist without guessing names. `--list` returns every table in the folder; `--search` filters by one or more case-insensitive substrings (matching any); `--search-regex` filters by one or more case-insensitive regular expressions (matching any). All discovery commands return a sorted JSON array of table names (extensions stripped) and exit with code `0`. Non-DDL files (e.g. `README.md`, dotfiles) are ignored.
 
 ```bash
-mysql-ddl-scout .resources/tables --list
-mysql-ddl-scout .resources/tables --search customer
-mysql-ddl-scout .resources/tables --search customer address
-mysql-ddl-scout .resources/tables --search-regex "customer_.*address"
-mysql-ddl-scout .resources/tables --search-regex "customers|address"
+mysql-ddl-scout --folder .resources/tables --list
+mysql-ddl-scout --folder .resources/tables --search customer
+mysql-ddl-scout --folder .resources/tables --search customer address
+mysql-ddl-scout --folder .resources/tables --search-regex "customer_.*address"
+mysql-ddl-scout --folder .resources/tables --search-regex "customers|address"
 ```
 
 **Stdout Response (JSON):**
@@ -67,7 +88,7 @@ mysql-ddl-scout .resources/tables --search-regex "customers|address"
 Verifies whether one or more table DDL files exist in the target folder. Accepts multiple table names separated by spaces. Always exits with code `0`; each result includes `exists` and `path` (`null` when not found).
 
 ```bash
-mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_table
+mysql-ddl-scout --folder .resources/tables --exists customers customer_addresses missing_table
 ```
 
 **Stdout Response (JSON):**
@@ -85,7 +106,7 @@ mysql-ddl-scout .resources/tables --exists customers customer_addresses missing_
 Returns just the column names for one or more tables — no metadata, minimal output. Ideal when an agent only needs to know which fields a table has. Accepts multiple table names separated by spaces; each result is `{"name":...,"fields":[...]}` with names in DDL order. A table that is missing or unparseable becomes `{"name":...,"error":...}` instead of aborting the whole call, and the command exits with code `1`.
 
 ```bash
-mysql-ddl-scout .resources/tables --fields customers customer_addresses missing_table
+mysql-ddl-scout --folder .resources/tables --fields customers customer_addresses missing_table
 ```
 
 **Stdout Response (JSON) [Exit Code: 1 — one table missing]:**
@@ -105,7 +126,7 @@ When all tables resolve, the command exits with code `0`.
 Extracts attributes for specified columns of a single table, or all columns when only the table name is given. Format: `table_name` or `table_name:column1,column2,column3`. Results follow DDL order when returning all fields, or the requested field order when specific columns are listed. Unknown fields are included as `{"field":"...","exists":false}` and the command exits with code `1`.
 
 ```bash
-mysql-ddl-scout .resources/tables --fields_info customers
+mysql-ddl-scout --folder .resources/tables --fields_info customers
 ```
 
 **Stdout Response (JSON):** all columns in DDL order (truncated):
@@ -121,7 +142,7 @@ mysql-ddl-scout .resources/tables --fields_info customers
 Specific fields with a missing column:
 
 ```bash
-mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
+mysql-ddl-scout --folder .resources/tables --fields_info customers:id,name,opa
 ```
 
 **Stdout Response (JSON) [Exit Code: 1]:**
@@ -139,7 +160,7 @@ mysql-ddl-scout .resources/tables --fields_info customers:id,name,opa
 Maps primary keys, indexes, unique constraints, and foreign keys for one or more tables. Unique indexes include `"unique": true`. Prefix indexes preserve the length suffix (e.g. `"name(20)"`). A single table returns a flat object; two or more return a JSON array (same per-table shape as the single-table response, plus `name`).
 
 ```bash
-mysql-ddl-scout .resources/tables --keys_info customers
+mysql-ddl-scout --folder .resources/tables --keys_info customers
 ```
 
 **Stdout Response (JSON):**
@@ -170,7 +191,7 @@ mysql-ddl-scout .resources/tables --keys_info customers
 Composite keys example:
 
 ```bash
-mysql-ddl-scout .resources/tables --keys_info customer_addresses
+mysql-ddl-scout --folder .resources/tables --keys_info customer_addresses
 ```
 
 ```json
@@ -193,7 +214,7 @@ mysql-ddl-scout .resources/tables --keys_info customer_addresses
 Multiple tables:
 
 ```bash
-mysql-ddl-scout .resources/tables --keys_info customers customer_addresses
+mysql-ddl-scout --folder .resources/tables --keys_info customers customer_addresses
 ```
 
 ```json
@@ -224,9 +245,9 @@ Returns declared foreign keys for a single table using only relationships presen
 `referenced_by` is `[]` when nothing points to the table. Exits `1` if the table file is not found.
 
 ```bash
-mysql-ddl-scout .resources/tables --references customers
-mysql-ddl-scout .resources/tables --referenced_by customers
-mysql-ddl-scout .resources/tables --relations customers
+mysql-ddl-scout --folder .resources/tables --references customers
+mysql-ddl-scout --folder .resources/tables --referenced_by customers
+mysql-ddl-scout --folder .resources/tables --relations customers
 ```
 
 **Stdout Response (`--references`):**
@@ -270,7 +291,7 @@ mysql-ddl-scout .resources/tables --relations customers
 Returns the `node-sql-parser` AST for a single table DDL. Useful for debugging parser output or building custom tooling on top of the AST.
 
 ```bash
-mysql-ddl-scout .resources/tables --ast customer_addresses
+mysql-ddl-scout --folder .resources/tables --ast customer_addresses
 ```
 
 **Stdout Response (JSON):** the full CREATE TABLE AST node (truncated example):
@@ -289,7 +310,7 @@ mysql-ddl-scout .resources/tables --ast customer_addresses
 If an operational error occurs (e.g., folder not found, empty DDL file, table file missing for `--fields_info`/`--keys_info`/`--ast`, or invalid MySQL syntax), `mysql-ddl-scout` writes a structured JSON diagnostic to `stderr` and exits with code `1`.
 
 ```bash
-mysql-ddl-scout .resources/tables --keys_info missing_table
+mysql-ddl-scout --folder .resources/tables --keys_info missing_table
 ```
 
 **Stderr Response (JSON) [Exit Code: 1]:**

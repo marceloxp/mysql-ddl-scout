@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { resolveTablePath, runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { resolveTablePath, runCli } from './helpers/run-cli.js';
 
 describe('--exists', () => {
   test('should find a single table with absolute path', () => {
-    const { status, json } = runCli([TABLES_DIR, '--exists', 'customers']);
+    const { status, json } = runCli(['--exists', 'customers']);
 
     expect(status).toBe(0);
     expect(json).toHaveLength(1);
@@ -15,7 +15,7 @@ describe('--exists', () => {
   });
 
   test('should return false for missing table', () => {
-    const { status, json } = runCli([TABLES_DIR, '--exists', 'non_existent_table']);
+    const { status, json } = runCli(['--exists', 'non_existent_table']);
 
     expect(status).toBe(0);
     expect(json[0]).toMatchObject({
@@ -27,7 +27,6 @@ describe('--exists', () => {
 
   test('should handle multiple tables in one call', () => {
     const { status, json } = runCli([
-      TABLES_DIR,
       '--exists',
       'customers',
       'customer_addresses',

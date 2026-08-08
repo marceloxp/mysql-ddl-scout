@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli } from './helpers/run-cli.js';
 
 /* eslint-disable max-lines-per-function */
 describe('--fields_info', () => {
   test('should return metadata for a specific field', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields_info', 'customers:name']);
+    const { status, json } = runCli(['--fields_info', 'customers:name']);
 
     expect(status).toBe(0);
     expect(json).toHaveLength(1);
@@ -17,7 +17,7 @@ describe('--fields_info', () => {
   });
 
   test('should return metadata for all fields in DDL order', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields_info', 'customers']);
+    const { status, json } = runCli(['--fields_info', 'customers']);
 
     expect(status).toBe(0);
     expect(json).toHaveLength(23);
@@ -31,7 +31,7 @@ describe('--fields_info', () => {
   });
 
   test('should preserve requested field order', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields_info', 'customers:name,id']);
+    const { status, json } = runCli(['--fields_info', 'customers:name,id']);
 
     expect(status).toBe(0);
     expect(json[0].field).toBe('name');
@@ -39,7 +39,7 @@ describe('--fields_info', () => {
   });
 
   test('should report missing fields with exit code 1', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields_info', 'customers:id,ops']);
+    const { status, json } = runCli(['--fields_info', 'customers:id,ops']);
 
     expect(status).toBe(1);
     expect(json[0].field).toBe('id');
@@ -47,7 +47,7 @@ describe('--fields_info', () => {
   });
 
   test('should include ENUM values', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:status']);
+    const { json } = runCli(['--fields_info', 'customers:status']);
 
     expect(json[0]).toMatchObject({
       field: 'status',
@@ -59,7 +59,7 @@ describe('--fields_info', () => {
   });
 
   test('should include SET values', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:permissions']);
+    const { json } = runCli(['--fields_info', 'customers:permissions']);
 
     expect(json[0]).toMatchObject({
       field: 'permissions',
@@ -71,7 +71,7 @@ describe('--fields_info', () => {
   });
 
   test('should include DECIMAL precision and scale', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:balance']);
+    const { json } = runCli(['--fields_info', 'customers:balance']);
 
     expect(json[0]).toMatchObject({
       field: 'balance',
@@ -85,7 +85,7 @@ describe('--fields_info', () => {
   });
 
   test('should include unsigned flag', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:age']);
+    const { json } = runCli(['--fields_info', 'customers:age']);
 
     expect(json[0]).toMatchObject({
       field: 'age',
@@ -95,7 +95,7 @@ describe('--fields_info', () => {
   });
 
   test('should include generated column storage type', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:full_name']);
+    const { json } = runCli(['--fields_info', 'customers:full_name']);
 
     expect(json[0]).toMatchObject({
       field: 'full_name',
@@ -107,7 +107,7 @@ describe('--fields_info', () => {
   });
 
   test('should include on_update for timestamps', () => {
-    const { json } = runCli([TABLES_DIR, '--fields_info', 'customers:updated_at,created_at']);
+    const { json } = runCli(['--fields_info', 'customers:updated_at,created_at']);
 
     expect(json[0]).toMatchObject({
       field: 'updated_at',

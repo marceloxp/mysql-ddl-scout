@@ -18,6 +18,9 @@ program
     outputError: () => {},
   })
   .exitOverride(({ exitCode, code, message }) => {
+    if (code === 'commander.missingMandatoryOptionValue' && program.args.length > 0) {
+      fail('Positional folder arguments are no longer supported. Use --folder <path> instead.');
+    }
     if (code === 'commander.excessArguments') {
       const active = SINGLE_TABLE_OPTIONS.find(([key]) => program.opts()[key]);
       fail(
@@ -33,8 +36,8 @@ program
   })
   .name('mysql-ddl-scout')
   .description('Parse MySQL DDL files and output strict JSON to stdout')
-  .version('1.4.0')
-  .argument('<folder>', 'Path to the folder containing DDL files')
+  .version('2.0.0')
+  .requiredOption('-f, --folder <path>', 'Path to the folder containing DDL files')
   .option('--list', 'List all table names found in the folder')
   .option('--search <patterns...>', 'List table names matching one or more substrings')
   .option(
@@ -61,9 +64,9 @@ program
     'Return incoming foreign keys from other tables that point to this table'
   )
   .option('--ast <table>', 'Return the node-sql-parser AST for a table DDL')
-  .action((folder, options) => {
+  .action((options) => {
     try {
-      runCommand(path.resolve(folder), options);
+      runCommand(path.resolve(options.folder), options);
     } catch (error) {
       if (error instanceof core.ScoutError) {
         fail(error.message);

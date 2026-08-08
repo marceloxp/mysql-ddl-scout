@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli } from './helpers/run-cli.js';
 
 describe('--fields', () => {
   test('should return only column names for a single table', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields', 'customers']);
+    const { status, json } = runCli(['--fields', 'customers']);
 
     expect(status).toBe(0);
     expect(json).toHaveLength(1);
@@ -15,7 +15,7 @@ describe('--fields', () => {
   });
 
   test('should handle multiple tables in one call', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields', 'customers', 'customer_addresses']);
+    const { status, json } = runCli(['--fields', 'customers', 'customer_addresses']);
 
     expect(status).toBe(0);
     expect(json).toHaveLength(2);
@@ -25,7 +25,7 @@ describe('--fields', () => {
   });
 
   test('should report a per-table error and exit 1 when a table is missing', () => {
-    const { status, json } = runCli([TABLES_DIR, '--fields', 'customers', 'missing_table']);
+    const { status, json } = runCli(['--fields', 'customers', 'missing_table']);
 
     expect(status).toBe(1);
     expect(json).toHaveLength(2);

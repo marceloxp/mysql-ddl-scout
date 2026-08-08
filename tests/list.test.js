@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { runCli, TABLES_DIR } from './helpers/run-cli.js';
+import { runCli } from './helpers/run-cli.js';
 
 describe('--list', () => {
   test('should return a sorted array of all table names in the folder', () => {
-    const { status, json } = runCli([TABLES_DIR, '--list']);
+    const { status, json } = runCli(['--list']);
 
     expect(status).toBe(0);
     expect(Array.isArray(json)).toBe(true);
@@ -16,7 +16,7 @@ describe('--list', () => {
   });
 
   test('should not include non-DDL files', () => {
-    const { json } = runCli([TABLES_DIR, '--list']);
+    const { json } = runCli(['--list']);
 
     expect(json.some((name) => name.includes('.'))).toBe(false);
   });
